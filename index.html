@@ -233,16 +233,12 @@
   <!-- Form -->
   <div class="body" id="formBody">
 
-    <!-- Engineer (auto from LIFF) -->
+    <!-- Engineer (dropdown from SharePoint) -->
     <div class="field">
       <label>👤 Engineer</label>
-      <div class="engineer-badge">
-        <span>👤</span>
-        <div>
-          <div id="engineerName" style="font-weight:600;">กำลังโหลด...</div>
-          <div id="engineerEmail" style="font-size:12px;color:#6b7280;"></div>
-        </div>
-      </div>
+      <select id="engineerSelect" onchange="onEngineerChange()">
+        <option value="">-- เลือก Engineer --</option>
+      </select>
     </div>
 
     <!-- Customer -->
@@ -271,14 +267,17 @@
       <label>📋 หัวข้อปัญหา</label>
       <div class="input-row">
         <input type="text" id="caseTitle" placeholder="สรุปปัญหาสั้นๆ..."/>
-        <button class="mic-btn" id="micBtn" onclick="toggleSpeech()" title="พิมพ์ด้วยเสียง">🎤</button>
+        <button class="mic-btn" id="micBtn" onclick="toggleSpeech('title')" title="พิมพ์ด้วยเสียง">🎤</button>
       </div>
     </div>
 
-    <!-- Detail -->
+    <!-- Detail + Speech -->
     <div class="field">
       <label>📝 รายละเอียดเพิ่มเติม (ถ้ามี)</label>
-      <textarea id="caseDetail" placeholder="รายละเอียดเพิ่มเติม..."></textarea>
+      <div class="input-row">
+        <textarea id="caseDetail" placeholder="รายละเอียดเพิ่มเติม..." style="flex:1;"></textarea>
+        <button class="mic-btn" id="micBtnDetail" onclick="toggleSpeech('detail')" title="พิมพ์ด้วยเสียง">🎤</button>
+      </div>
     </div>
 
     <!-- Severity -->
@@ -313,15 +312,18 @@
 <script>
 // ===== CONFIG =====
 const GET_CUSTOMERS_URL = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/47424e018b844768a24d414d7048c9b0/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=FcrNMg3nPeMtX67OPxS2chrO9fXabbx5XfGotWFVF3s';
+const GET_ENGINEERS_URL = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/c26384e3309847528b6b9c428399f777/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=u1CdrG01HdR3M0yyiZTlHzvJgrf3hvOV85oXJNqqVRg';
 const CREATE_CASE_URL  = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/8afd8b0926294e34b064abb2227dbef3/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=necY1Q4WuwGeqj8hBlBS39VPsSijTo7DPlWxt6tGyaU';
 const LIFF_ID = '2010461953-5RXVNllu';
 
 // ===== STATE =====
 let customers = [];
+let engineers = [];
 let selectedSeverity = '';
 let engineerProfile = { name: '', email: '' };
 let recognition = null;
 let isRecording = false;
+let activeRecordField = null;
 
 // ===== INIT =====
 async function init() {
@@ -330,19 +332,9 @@ async function init() {
 
   try {
     await liff.init({ liffId: LIFF_ID });
-    if (liff.isLoggedIn()) {
-      const profile = await liff.getProfile();
-      engineerProfile.name = profile.displayName;
-      document.getElementById('engineerName').textContent = profile.displayName;
-      document.getElementById('engineerEmail').textContent = 'LINE: ' + profile.userId;
-    }
-  } catch(e) {
-    // fallback ถ้าไม่ได้เปิดใน LIFF
-    document.getElementById('engineerName').textContent = 'Engineer';
-    document.getElementById('engineerEmail').textContent = '';
-  }
+  } catch(e) {}
 
-  await loadCustomers();
+  await Promise.all([loadCustomers(), loadEngineers()]);
 
   document.getElementById('loadingScreen').style.display = 'none';
   document.getElementById('formBody').style.display = 'block';
@@ -357,6 +349,32 @@ async function loadCustomers() {
   } catch(e) {
     customers = [];
   }
+}
+
+// ===== LOAD ENGINEERS =====
+async function loadEngineers() {
+  try {
+    const res = await fetch(GET_ENGINEERS_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}' });
+    const data = await res.json();
+    engineers = Array.isArray(data) ? data : (data.value || []);
+    const sel = document.getElementById('engineerSelect');
+    engineers.forEach(e => {
+      const opt = document.createElement('option');
+      opt.value = e.email;
+      opt.textContent = e.name;
+      opt.dataset.name = e.name;
+      sel.appendChild(opt);
+    });
+  } catch(e) {
+    engineers = [];
+  }
+}
+
+function onEngineerChange() {
+  const sel = document.getElementById('engineerSelect');
+  const opt = sel.options[sel.selectedIndex];
+  engineerProfile.email = sel.value;
+  engineerProfile.name  = opt ? opt.dataset.name : '';
 }
 
 // ===== AUTOCOMPLETE =====
@@ -403,29 +421,37 @@ function setSeverity(val) {
 }
 
 // ===== SPEECH TO TEXT =====
-function toggleSpeech() {
+function toggleSpeech(field) {
   if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
     alert('Browser ไม่รองรับ Speech-to-Text ครับ'); return;
   }
-  if (isRecording) {
+  const targetId = field === 'detail' ? 'caseDetail' : 'caseTitle';
+  const micId    = field === 'detail' ? 'micBtnDetail' : 'micBtn';
+
+  if (isRecording && activeRecordField === field) {
     recognition.stop(); return;
   }
+  if (isRecording) { recognition.stop(); }
+
+  activeRecordField = field;
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   recognition = new SR();
   recognition.lang = 'th-TH';
   recognition.interimResults = false;
   recognition.onstart = () => {
     isRecording = true;
-    document.getElementById('micBtn').classList.add('recording');
-    document.getElementById('micBtn').textContent = '⏹';
+    document.getElementById(micId).classList.add('recording');
+    document.getElementById(micId).textContent = '⏹';
   };
   recognition.onresult = e => {
-    document.getElementById('caseTitle').value = e.results[0][0].transcript;
+    const el = document.getElementById(targetId);
+    el.value = (el.value ? el.value + ' ' : '') + e.results[0][0].transcript;
   };
   recognition.onend = () => {
     isRecording = false;
-    document.getElementById('micBtn').classList.remove('recording');
-    document.getElementById('micBtn').textContent = '🎤';
+    activeRecordField = null;
+    document.getElementById(micId).classList.remove('recording');
+    document.getElementById(micId).textContent = '🎤';
   };
   recognition.start();
 }
@@ -436,6 +462,7 @@ async function submitCase() {
   const title    = document.getElementById('caseTitle').value.trim();
   const detail   = document.getElementById('caseDetail').value.trim();
 
+  if (!engineerProfile.email) { alert('กรุณาเลือก Engineer'); return; }
   if (!customer) { alert('กรุณาเลือกชื่อลูกค้า'); return; }
   if (!title)    { alert('กรุณาใส่หัวข้อปัญหา'); return; }
   if (!selectedSeverity) { alert('กรุณาเลือก Severity'); return; }
@@ -481,6 +508,8 @@ function resetForm() {
   document.getElementById('caseDetail').value = '';
   selectedSeverity = '';
   document.querySelectorAll('.sev-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('engineerSelect').selectedIndex = 0;
+  engineerProfile = { name: '', email: '' };
   document.getElementById('submitBtn').disabled = false;
   document.getElementById('submitBtn').textContent = '🎫 บันทึกเคส';
   document.getElementById('successScreen').style.display = 'none';
