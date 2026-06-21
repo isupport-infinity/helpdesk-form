@@ -53,6 +53,7 @@
   input:focus, select:focus, textarea:focus {
     border-color: #1a73e8;
   }
+  select:disabled { background: #f3f4f6; color: #9ca3af; }
   textarea { resize: vertical; min-height: 80px; }
 
   /* Autocomplete */
@@ -135,18 +136,12 @@
   .sev-btn[data-val="High"].active   { background:#ffedd5; border-color:#ea580c; color:#ea580c; }
   .sev-btn[data-val="Critical"].active { background:#fee2e2; border-color:#dc2626; color:#dc2626; }
 
-  /* Engineer */
-  .engineer-badge {
-    background: #f0f4f8;
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-size: 14px;
-    color: #374151;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  /* Section divider */
+  .section-divider {
+    border: none;
+    border-top: 1px dashed #e5e7eb;
+    margin: 4px 0 18px;
   }
-  .engineer-badge span { font-size: 18px; }
 
   /* Submit */
   .submit-btn {
@@ -251,6 +246,32 @@
       </div>
     </div>
 
+    <!-- PO Number (loaded after customer selected) -->
+    <div class="field">
+      <label>📄 PO Number</label>
+      <select id="poSelect" onchange="onPOChange()" disabled>
+        <option value="">-- เลือกลูกค้าก่อน --</option>
+      </select>
+    </div>
+
+    <!-- Sender / Contact (loaded after customer selected) -->
+    <div class="field">
+      <label>👥 ผู้แจ้ง (Sender)</label>
+      <select id="contactSelect" onchange="onContactChange()" disabled>
+        <option value="">-- เลือกลูกค้าก่อน --</option>
+      </select>
+    </div>
+
+    <hr class="section-divider"/>
+
+    <!-- Product -->
+    <div class="field">
+      <label>📦 Product</label>
+      <select id="productSelect">
+        <option value="">-- เลือก Product --</option>
+      </select>
+    </div>
+
     <!-- Quick Templates -->
     <div class="field">
       <label>⚡ Quick Templates</label>
@@ -311,19 +332,27 @@
 
 <script>
 // ===== CONFIG =====
-const GET_CUSTOMERS_URL = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/47424e018b844768a24d414d7048c9b0/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=FcrNMg3nPeMtX67OPxS2chrO9fXabbx5XfGotWFVF3s';
-const GET_ENGINEERS_URL = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/c26384e3309847528b6b9c428399f777/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=u1CdrG01HdR3M0yyiZTlHzvJgrf3hvOV85oXJNqqVRg';
-const CREATE_CASE_URL  = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/8afd8b0926294e34b064abb2227dbef3/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=necY1Q4WuwGeqj8hBlBS39VPsSijTo7DPlWxt6tGyaU';
+const GET_CUSTOMERS_URL  = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/47424e018b844768a24d414d7048c9b0/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=FcrNMg3nPeMtX67OPxS2chrO9fXabbx5XfGotWFVF3s';
+const GET_ENGINEERS_URL  = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/c26384e3309847528b6b9c428399f777/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=u1CdrG01HdR3M0yyiZTlHzvJgrf3hvOV85oXJNqqVRg';
+const CREATE_CASE_URL    = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/8afd8b0926294e34b064abb2227dbef3/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=necY1Q4WuwGeqj8hBlBS39VPsSijTo7DPlWxt6tGyaU';
+const GET_PO_URL         = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/dcebd4805f854ba0993c64f64bd4c73e/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=hI2vawIJ7N3g1tyNhbPvHaLMTGlqwqEerAZQtJBRSA4';
+const GET_CONTACTS_URL   = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/ccdec52b30a0434cb419bbbf22ab7d29/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=PtHbnOYBCXY5H9ZvB1sypv-L7bAZML6XLlpcRDpAb94';
+const GET_PRODUCTS_URL   = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/b703a8fc164e456fa7b94adc43b90702/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=TBkId07JFhoGeYkt2vhMAf7yoT9b2kWoo5qoxBcNDlw';
 const LIFF_ID = '2010461953-5RXVNllu';
 
 // ===== STATE =====
 let customers = [];
 let engineers = [];
-let selectedSeverity = '';
-let engineerProfile = { name: '', email: '' };
-let recognition = null;
-let isRecording = false;
-let activeRecordField = null;
+let pos = [];
+let contacts = [];
+let products = [];
+let selectedSeverity   = '';
+let selectedPONumber   = '';
+let selectedContact    = { name: '', email: '' };
+let engineerProfile    = { name: '', email: '' };
+let recognition        = null;
+let isRecording        = false;
+let activeRecordField  = null;
 
 // ===== INIT =====
 async function init() {
@@ -334,7 +363,7 @@ async function init() {
     await liff.init({ liffId: LIFF_ID });
   } catch(e) {}
 
-  await Promise.all([loadCustomers(), loadEngineers()]);
+  await Promise.all([loadCustomers(), loadEngineers(), loadProducts()]);
 
   document.getElementById('loadingScreen').style.display = 'none';
   document.getElementById('formBody').style.display = 'block';
@@ -377,6 +406,97 @@ function onEngineerChange() {
   engineerProfile.name  = opt ? opt.dataset.name : '';
 }
 
+// ===== LOAD PRODUCTS (on init) =====
+async function loadProducts() {
+  const productSelect = document.getElementById('productSelect');
+  try {
+    const res = await fetch(GET_PRODUCTS_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: '{}'
+    });
+    const data = await res.json();
+    products = Array.isArray(data) ? data : (data.value || []);
+    productSelect.innerHTML = '<option value="">-- เลือก Product --</option>';
+    products.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.product || '';
+      opt.textContent = p.product || '';
+      productSelect.appendChild(opt);
+    });
+  } catch(e) {
+    productSelect.innerHTML = '<option value="">-- โหลดไม่สำเร็จ --</option>';
+  }
+}
+
+// ===== LOAD PO (after customer selected) =====
+async function loadPO(customerShortName) {
+  const poSelect = document.getElementById('poSelect');
+  poSelect.innerHTML = '<option value="">-- กำลังโหลด... --</option>';
+  poSelect.disabled = true;
+  try {
+    const res = await fetch(GET_PO_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ customerShortName })
+    });
+    const data = await res.json();
+    pos = Array.isArray(data) ? data : (data.value || []);
+    poSelect.innerHTML = '<option value="">-- เลือก PO --</option>';
+    pos.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.poNumber || '';
+      opt.textContent = `${p.poCustomer || ''} - ${p.poDescription || ''}`;
+      poSelect.appendChild(opt);
+    });
+    poSelect.disabled = false;
+  } catch(e) {
+    poSelect.innerHTML = '<option value="">-- โหลดไม่สำเร็จ --</option>';
+    poSelect.disabled = false;
+  }
+}
+
+function onPOChange() {
+  selectedPONumber = document.getElementById('poSelect').value;
+}
+
+// ===== LOAD CONTACTS (after customer selected) =====
+async function loadContacts(customerShortName) {
+  const contactSelect = document.getElementById('contactSelect');
+  contactSelect.innerHTML = '<option value="">-- กำลังโหลด... --</option>';
+  contactSelect.disabled = true;
+  try {
+    const res = await fetch(GET_CONTACTS_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ customerShortName })
+    });
+    const data = await res.json();
+    contacts = Array.isArray(data) ? data : (data.value || []);
+    contactSelect.innerHTML = '<option value="">-- เลือกผู้แจ้ง --</option>';
+    contacts.forEach((c, i) => {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = `${c.companyName || ''} - ${c.contactName || ''}`;
+      contactSelect.appendChild(opt);
+    });
+    contactSelect.disabled = false;
+  } catch(e) {
+    contactSelect.innerHTML = '<option value="">-- โหลดไม่สำเร็จ --</option>';
+    contactSelect.disabled = false;
+  }
+}
+
+function onContactChange() {
+  const sel = document.getElementById('contactSelect');
+  const idx = parseInt(sel.value);
+  if (!isNaN(idx) && contacts[idx]) {
+    selectedContact = { name: contacts[idx].contactName || '', email: contacts[idx].email || '' };
+  } else {
+    selectedContact = { name: '', email: '' };
+  }
+}
+
 // ===== AUTOCOMPLETE =====
 document.addEventListener('DOMContentLoaded', () => {
   const input = document.getElementById('customerInput');
@@ -393,8 +513,15 @@ document.addEventListener('DOMContentLoaded', () => {
       div.textContent = c.name;
       div.onclick = () => {
         input.value = c.name;
-        document.getElementById('customerValue').value = c.short || c.name;
+        const shortName = c.short || c.name;
+        document.getElementById('customerValue').value = shortName;
         list.style.display = 'none';
+        // Reset dependent dropdowns
+        selectedPONumber = '';
+        selectedContact = { name: '', email: '' };
+        // Load PO + Contacts for selected customer
+        loadPO(shortName);
+        loadContacts(shortName);
       };
       list.appendChild(div);
     });
@@ -461,10 +588,11 @@ async function submitCase() {
   const customer = document.getElementById('customerValue').value || document.getElementById('customerInput').value;
   const title    = document.getElementById('caseTitle').value.trim();
   const detail   = document.getElementById('caseDetail').value.trim();
+  const product  = document.getElementById('productSelect').value;
 
   if (!engineerProfile.email) { alert('กรุณาเลือก Engineer'); return; }
-  if (!customer) { alert('กรุณาเลือกชื่อลูกค้า'); return; }
-  if (!title)    { alert('กรุณาใส่หัวข้อปัญหา'); return; }
+  if (!customer)  { alert('กรุณาเลือกชื่อลูกค้า'); return; }
+  if (!title)     { alert('กรุณาใส่หัวข้อปัญหา'); return; }
   if (!selectedSeverity) { alert('กรุณาเลือก Severity'); return; }
 
   const btn = document.getElementById('submitBtn');
@@ -474,11 +602,15 @@ async function submitCase() {
   try {
     const payload = {
       customerShortName: customer,
-      caseTitle: title,
-      severity: selectedSeverity,
-      engineerEmail: engineerProfile.email,
-      engineerName: engineerProfile.name,
-      detail: detail
+      caseTitle:         title,
+      severity:          selectedSeverity,
+      engineerEmail:     engineerProfile.email,
+      engineerName:      engineerProfile.name,
+      detail:            detail,
+      poNumber:          selectedPONumber,
+      product:           product,
+      senderName:        selectedContact.name,
+      senderEmail:       selectedContact.email
     };
     const res  = await fetch(CREATE_CASE_URL, {
       method: 'POST',
@@ -490,7 +622,8 @@ async function submitCase() {
 
     document.getElementById('resultCaseId').textContent = caseId;
     document.getElementById('resultDetail').innerHTML =
-      `<b>${customer}</b><br>${title}<br>Severity: ${selectedSeverity}`;
+      `<b>${customer}</b><br>${title}<br>Severity: ${selectedSeverity}` +
+      (selectedContact.name ? `<br>ผู้แจ้ง: ${selectedContact.name}` : '');
     document.getElementById('formBody').style.display = 'none';
     document.getElementById('successScreen').style.display = 'block';
   } catch(e) {
@@ -506,7 +639,14 @@ function resetForm() {
   document.getElementById('customerValue').value = '';
   document.getElementById('caseTitle').value = '';
   document.getElementById('caseDetail').value = '';
-  selectedSeverity = '';
+  document.getElementById('poSelect').innerHTML = '<option value="">-- เลือกลูกค้าก่อน --</option>';
+  document.getElementById('poSelect').disabled = true;
+  document.getElementById('contactSelect').innerHTML = '<option value="">-- เลือกลูกค้าก่อน --</option>';
+  document.getElementById('contactSelect').disabled = true;
+  document.getElementById('productSelect').selectedIndex = 0;
+  selectedSeverity  = '';
+  selectedPONumber  = '';
+  selectedContact   = { name: '', email: '' };
   document.querySelectorAll('.sev-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('engineerSelect').selectedIndex = 0;
   engineerProfile = { name: '', email: '' };
