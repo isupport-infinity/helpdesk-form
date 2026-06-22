@@ -441,7 +441,19 @@ async function loadPO(customerShortName) {
       body: JSON.stringify({ customerShortName })
     });
     const data = await res.json();
-    pos = Array.isArray(data) ? data : (data.value || []);
+    const raw = Array.isArray(data) ? data : (data.value || []);
+    // Keep only latest EndDate per PONumber
+    const poMap = {};
+    raw.forEach(p => {
+      const key = `${p.poCustomer}|${p.poDescription}`;
+      if (!poMap[key] || p.endDate > poMap[key].endDate) {
+        poMap[key] = p;
+      }
+    });
+    pos = Object.values(poMap).sort((a, b) =>
+      (a.poCustomer || '').localeCompare(b.poCustomer || '') ||
+      (a.poDescription || '').localeCompare(b.poDescription || '')
+    );
     poSelect.innerHTML = '<option value="">-- เลือก PO --</option>';
     pos.forEach(p => {
       const opt = document.createElement('option');
