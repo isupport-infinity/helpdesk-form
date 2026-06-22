@@ -446,7 +446,7 @@ async function loadPO(customerShortName) {
     pos.forEach(p => {
       const opt = document.createElement('option');
       opt.value = p.poNumber || '';
-      opt.textContent = `${p.poCustomer || ''} - ${p.poDescription || ''}`;
+      opt.textContent = `${p.poCustomer || ''} - ${p.poNumber || ''} - ${p.poDescription || ''}`;
       poSelect.appendChild(opt);
     });
     poSelect.disabled = false;
