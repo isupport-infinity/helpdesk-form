@@ -484,12 +484,12 @@ async function loadContacts(customerShortName) {
     });
     const data = await res.json();
     const allContacts = Array.isArray(data) ? data : (data.value || []);
-    contacts = allContacts.filter(c => c.companyShortName === customerShortName);
+    contacts = allContacts.filter(c => (c['companyShortName'] || c['companyShortName ']).trim() === customerShortName);
     contactSelect.innerHTML = '<option value="">-- เลือกผู้แจ้ง --</option>';
     contacts.forEach((c, i) => {
       const opt = document.createElement('option');
       opt.value = i;
-      opt.textContent = `${c.companyName || ''} - ${c.contactName || ''}`;
+      opt.textContent = c.contactName || '';
       contactSelect.appendChild(opt);
     });
     contactSelect.disabled = false;
