@@ -445,9 +445,8 @@ async function loadPO(customerShortName) {
     // Keep only latest EndDate per PONumber
     const poMap = {};
     raw.forEach(p => {
-      const key = `${p.poCustomer}|${p.poDescription}`;
-      if (!poMap[key] || p.endDate > poMap[key].endDate) {
-        poMap[key] = p;
+      if (!poMap[p.poNumber] || p.endDate > poMap[p.poNumber].endDate) {
+        poMap[p.poNumber] = p;
       }
     });
     pos = Object.values(poMap).sort((a, b) =>
