@@ -644,6 +644,7 @@ function caseCard(c, isClosed) {
       <div class="case-body">
         <div class="case-title">${c.caseTitle || '-'}</div>
         <div class="case-meta">${meta}</div>
+        ${c.product ? `<div style="font-size:11px;color:#b0b0b0;margin-top:2px;">📦 ${c.product}</div>` : ''}
       </div>
       ${rightBadge}
     </div>`;
