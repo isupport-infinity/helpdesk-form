@@ -9,38 +9,206 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   font-family: 'Segoe UI', Arial, sans-serif;
-  background: #f5f5f5;
-  color: #242424;
+  background: #f0f0f6;
+  color: #1a1a2e;
   min-height: 100vh;
-  overflow-x: hidden;
+  display: flex;
+  overflow: hidden;
+  height: 100vh;
 }
 
-/* ===== HEADER ===== */
-.header {
+/* ===== SIDEBAR ===== */
+.sidebar {
+  width: 210px;
+  min-height: 100vh;
+  background: #1e1b4b;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+.sidebar-logo {
+  padding: 18px 16px 16px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sidebar-logo-icon {
+  width: 30px; height: 30px;
   background: #4b3fce;
-  padding: 14px 20px;
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+.sidebar-nav { flex: 1; padding: 10px 0; }
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 16px;
+  color: rgba(255,255,255,0.55);
+  font-size: 14px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: all 0.15s;
+  user-select: none;
+}
+.nav-item:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.9); }
+.nav-item.active {
+  background: rgba(255,255,255,0.11);
+  color: #fff;
+  border-left-color: #7c6fef;
+  font-weight: 600;
+}
+.nav-icon { width: 17px; height: 17px; flex-shrink: 0; }
+.sidebar-bottom {
+  padding: 14px 16px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.nav-settings {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0;
+  color: rgba(255,255,255,0.4);
+  font-size: 13px;
+  cursor: pointer;
+}
+.nav-settings:hover { color: rgba(255,255,255,0.75); }
+
+/* ===== MAIN ===== */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow: hidden;
+}
+.topbar {
+  background: #fff;
+  padding: 13px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  border-bottom: 1px solid #e8e8ee;
+  flex-shrink: 0;
 }
-.header-title { color: #fff; font-size: 16px; font-weight: 600; }
-.user-badge {
+.topbar-title { font-size: 16px; font-weight: 700; color: #1a1a2e; }
+.user-info { display: flex; align-items: center; gap: 9px; }
+.avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: #4b3fce;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: #fff;
+  flex-shrink: 0;
+}
+.user-name { font-size: 14px; font-weight: 500; color: #374151; }
+
+/* ===== PAGE CONTENT ===== */
+.page-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px 80px;
+}
+
+/* ===== NEW CASE BUTTON ===== */
+.new-case-btn {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: rgba(255,255,255,0.9);
+  background: #2d2a6e;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 11px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 22px;
+  width: 100%;
+  transition: background 0.15s;
+  text-decoration: none;
+  justify-content: center;
+}
+.new-case-btn:hover { background: #3d38a0; }
+
+/* ===== SECTION LABEL ===== */
+.section-label {
   font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 10px;
 }
-.avatar {
-  width: 30px; height: 30px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.25);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 600; color: #fff;
+.section-label + .section-label { margin-top: 20px; }
+
+/* ===== CASE CARD ===== */
+.case-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 13px 16px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  transition: box-shadow 0.15s, transform 0.1s;
 }
+.case-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transform: translateY(-1px);
+}
+.case-id-pill {
+  font-size: 11px;
+  font-weight: 700;
+  color: #4b3fce;
+  background: #ede9ff;
+  padding: 3px 9px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.case-body { flex: 1; min-width: 0; }
+.case-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a2e;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+.case-meta { font-size: 12px; color: #9ca3af; }
+
+/* ===== BADGES ===== */
+.badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.badge-critical { background: #fee2e2; color: #dc2626; }
+.badge-high     { background: #fff3e0; color: #e65100; }
+.badge-medium   { background: #fffde7; color: #d97706; }
+.badge-low      { background: #e8f5e9; color: #2e7d32; }
+.badge-new      { background: #e8f0fe; color: #1967d2; }
+.badge-inprogress { background: #fff3e0; color: #e65100; }
+.badge-closed   { background: #f3f4f6; color: #6b7280; }
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+  text-align: center;
+  padding: 36px 0 20px;
+  color: #9ca3af;
+  font-size: 14px;
+}
+.empty-icon { font-size: 30px; margin-bottom: 8px; }
 
 /* ===== LOADING ===== */
 .loading {
@@ -48,127 +216,53 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: calc(100vh - 58px);
-  gap: 16px;
+  height: 200px;
+  gap: 12px;
 }
 .spinner {
-  width: 36px; height: 36px;
-  border: 3px solid #e0e0e0;
+  width: 28px; height: 28px;
+  border: 3px solid #e5e7eb;
   border-top-color: #4b3fce;
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  animation: spin 0.7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ===== CONTENT ===== */
-.content { padding: 16px 16px 100px; max-width: 680px; margin: 0 auto; }
-
-/* New Case Button */
-.new-case-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+/* ===== ENGINEER SELECTOR ===== */
+.eng-selector {
+  display: none;
+  max-width: 360px;
+  margin: 40px auto;
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+.eng-selector h3 { font-size: 16px; margin-bottom: 16px; }
+.eng-selector select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+.eng-selector button {
+  width: 100%;
+  padding: 11px;
   background: #4b3fce;
   color: #fff;
   border: none;
   border-radius: 8px;
-  padding: 10px 18px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  margin-bottom: 20px;
-  text-decoration: none;
-}
-.new-case-btn:hover { background: #3d31b5; }
-
-/* Section */
-.section-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #616161;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 10px;
-  margin-top: 20px;
 }
 
-/* Case Card */
-.case-card {
-  background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
-  padding: 14px 16px;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
-.case-card:hover {
-  border-color: #4b3fce;
-  box-shadow: 0 2px 8px rgba(75,63,206,0.12);
-}
-.case-id {
-  font-size: 11px;
-  font-weight: 600;
-  background: #ede9ff;
-  color: #4b3fce;
-  padding: 3px 8px;
-  border-radius: 6px;
-  white-space: nowrap;
-}
-.case-body { flex: 1; min-width: 0; }
-.case-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #242424;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-bottom: 3px;
-}
-.case-meta { font-size: 12px; color: #616161; }
-
-/* Severity Badge */
-.sev {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 6px;
-  white-space: nowrap;
-}
-.sev-low    { background: #e6f4ea; color: #1e7e34; }
-.sev-medium { background: #fff8e1; color: #b45309; }
-.sev-high   { background: #fff3e0; color: #c2410c; }
-.sev-critical { background: #fdecea; color: #b91c1c; }
-
-/* Status Badge */
-.status-badge {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 6px;
-  white-space: nowrap;
-}
-.status-new { background: #e3f2fd; color: #1565c0; }
-.status-inprogress { background: #fff8e1; color: #b45309; }
-.status-completed { background: #e6f4ea; color: #1e7e34; }
-
-/* Empty state */
-.empty-state {
-  text-align: center;
-  padding: 32px 16px;
-  color: #9e9e9e;
-  font-size: 14px;
-}
-.empty-icon { font-size: 40px; margin-bottom: 12px; }
-
-/* ===== UPDATE MODAL ===== */
+/* ===== MODAL ===== */
 .overlay {
   display: none;
-  position: fixed;
-  inset: 0;
+  position: fixed; inset: 0;
   background: rgba(0,0,0,0.4);
   z-index: 100;
   align-items: flex-end;
@@ -177,11 +271,13 @@ body {
 .overlay.show { display: flex; }
 .modal {
   background: #fff;
-  border-radius: 16px 16px 0 0;
+  border-radius: 20px 20px 0 0;
+  padding: 16px 20px 36px;
   width: 100%;
-  max-width: 680px;
-  padding: 24px 20px 40px;
-  animation: slideUp 0.2s ease;
+  max-width: 560px;
+  animation: slideUp 0.22s ease;
+  max-height: 88vh;
+  overflow-y: auto;
 }
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 .modal-handle {
@@ -191,164 +287,186 @@ body {
   margin: 0 auto 20px;
 }
 .modal-caseid {
-  font-size: 12px;
-  font-weight: 600;
-  color: #4b3fce;
-  background: #ede9ff;
-  padding: 4px 10px;
-  border-radius: 6px;
-  display: inline-block;
-  margin-bottom: 8px;
+  font-size: 12px; font-weight: 700;
+  color: #4b3fce; background: #ede9ff;
+  padding: 4px 10px; border-radius: 20px;
+  display: inline-block; margin-bottom: 8px;
 }
 .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
-.modal-meta { font-size: 13px; color: #616161; margin-bottom: 20px; }
+.modal-meta { font-size: 13px; color: #6b7280; margin-bottom: 18px; }
 .modal-current {
-  background: #f5f5f5;
+  background: #f9fafb;
   border-radius: 8px;
   padding: 12px 14px;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 14px;
+  font-size: 14px; font-weight: 500; color: #374151;
 }
-.modal-label { font-size: 12px; font-weight: 600; color: #616161; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
-.status-btns { display: flex; gap: 10px; margin-bottom: 16px; }
+.modal-label {
+  font-size: 13px; font-weight: 600;
+  color: #374151; margin-bottom: 8px;
+}
+.status-btns { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
 .status-btn {
-  flex: 1;
   padding: 12px;
-  border-radius: 10px;
-  border: 2px solid #e0e0e0;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
   background: #fff;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s;
-  color: #616161;
+  font-size: 14px; cursor: pointer;
+  transition: all 0.15s; color: #374151;
 }
-.status-btn:hover { border-color: #4b3fce; color: #4b3fce; background: #f5f3ff; }
-.status-btn.selected { border-color: #4b3fce; color: #4b3fce; background: #ede9ff; }
-.status-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.status-btn:hover { border-color: #4b3fce; color: #4b3fce; }
+.status-btn.selected { border-color: #4b3fce; background: #ede9ff; color: #4b3fce; font-weight: 600; }
+.modal-note {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px; font-family: inherit;
+  resize: vertical; min-height: 80px;
+  margin-bottom: 16px;
+}
+.modal-note:focus { outline: none; border-color: #4b3fce; }
 .update-btn {
   width: 100%;
   padding: 14px;
-  background: #4b3fce;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  margin-bottom: 10px;
+  background: #2d2a6e;
+  color: #fff; border: none;
+  border-radius: 10px; font-size: 15px; font-weight: 600;
+  cursor: pointer; margin-bottom: 10px;
+  transition: background 0.15s;
 }
-.update-btn:disabled { background: #9e9e9e; cursor: not-allowed; }
-.cancel-btn {
-  width: 100%;
-  padding: 12px;
-  background: transparent;
-  color: #616161;
-  border: none;
-  border-radius: 10px;
-  font-size: 14px;
-  cursor: pointer;
+.update-btn:disabled { background: #c4c4c4; cursor: not-allowed; }
+.update-btn:not(:disabled):hover { background: #3d38a0; }
+.cancel-link {
+  display: block; text-align: center;
+  color: #6b7280; font-size: 14px;
+  cursor: pointer; padding: 4px;
 }
 
 /* ===== FAB ===== */
 .fab {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
-  width: 56px; height: 56px;
+  right: 20px; bottom: 24px;
+  width: 44px; height: 44px;
+  background: #2d2a6e;
   border-radius: 50%;
-  background: #4b3fce;
-  color: #fff;
-  border: none;
-  font-size: 28px;
   display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 22px;
   cursor: pointer;
-  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(45,42,110,0.4);
   z-index: 50;
-  box-shadow: 0 4px 12px rgba(75,63,206,0.4);
-}
-.fab:hover { background: #3d31b5; }
-
-/* Engineer selector (fallback) */
-.eng-selector {
-  display: none;
-  padding: 20px;
-  max-width: 400px;
-  margin: 40px auto;
-  background: #fff;
-  border-radius: 12px;
-  border: 1px solid #e0e0e0;
-}
-.eng-selector h2 { font-size: 16px; margin-bottom: 12px; }
-.eng-selector select {
-  width: 100%;
-  padding: 10px 14px;
-  border: 1.5px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 14px;
-  margin-bottom: 12px;
-}
-.eng-selector button {
-  width: 100%;
-  padding: 12px;
-  background: #4b3fce;
-  color: #fff;
   border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
+  transition: background 0.15s;
 }
+.fab:hover { background: #3d38a0; }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <span class="header-title">🎫 iCare Helpdesk</span>
-  <div class="user-badge">
-    <div class="avatar" id="avatarText">--</div>
-    <span id="userName">กำลังโหลด...</span>
+<!-- ===== SIDEBAR ===== -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-icon">🎫</div>
+    ICARE HELPDESK
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-item active" id="navMyCases" onclick="switchView('myCases')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <line x1="8" y1="8" x2="16" y2="8"/>
+        <line x1="8" y1="12" x2="16" y2="12"/>
+        <line x1="8" y1="16" x2="13" y2="16"/>
+      </svg>
+      เคสของฉัน
+    </div>
+    <div class="nav-item" id="navNewCase" onclick="openNewCase()">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="9"/>
+        <line x1="12" y1="8" x2="12" y2="16"/>
+        <line x1="8" y1="12" x2="16" y2="12"/>
+      </svg>
+      เปิดเคสใหม่
+    </div>
+    <div class="nav-item" id="navHistory" onclick="switchView('history')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="9"/>
+        <polyline points="12 7 12 12 15 15"/>
+      </svg>
+      ประวัติเคส
+    </div>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="nav-settings">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+      ตั้งค่า
+    </div>
   </div>
 </div>
 
-<!-- Engineer Selector (fallback เมื่อไม่อยู่ใน Teams) -->
-<div class="eng-selector" id="engSelector">
-  <h2>เลือก Engineer</h2>
-  <select id="engDropdown">
-    <option value="">-- เลือกชื่อคุณ --</option>
-  </select>
-  <button onclick="confirmEngineer()">ยืนยัน</button>
+<!-- ===== MAIN ===== -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="pageTitle">เคสของฉัน</div>
+    <div class="user-info">
+      <div class="avatar" id="avatarText">--</div>
+      <div class="user-name" id="userName">กำลังโหลด...</div>
+    </div>
+  </div>
+
+  <div class="page-content">
+    <!-- Loading -->
+    <div id="loadingScreen" class="loading">
+      <div class="spinner"></div>
+      <div style="color:#9ca3af;font-size:13px;">กำลังโหลดข้อมูล...</div>
+    </div>
+
+    <!-- Engineer Selector (fallback) -->
+    <div id="engSelector" class="eng-selector">
+      <h3>เลือก Engineer</h3>
+      <select id="engDropdown"><option value="">-- เลือกชื่อคุณ --</option></select>
+      <button onclick="confirmEngineer()">ยืนยัน</button>
+    </div>
+
+    <!-- Main Content -->
+    <div id="mainContent" style="display:none;">
+      <button class="new-case-btn" onclick="openNewCase()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        เปิดเคสใหม่
+      </button>
+
+      <!-- My Cases View -->
+      <div id="myCasesView">
+        <div class="section-label" id="activeSectionLabel">เปิดอยู่</div>
+        <div id="activeCases"></div>
+        <div class="section-label" style="margin-top:22px;" id="closedSectionLabel">ปิดล่าสุด</div>
+        <div id="completedCases"></div>
+      </div>
+
+      <!-- History View -->
+      <div id="historyView" style="display:none;">
+        <div class="section-label" id="historySectionLabel">ประวัติเคสทั้งหมด</div>
+        <div id="historyCases"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<!-- Loading -->
-<div class="loading" id="loadingScreen">
-  <div class="spinner"></div>
-  <p style="color:#616161;font-size:14px;">กำลังโหลดข้อมูล...</p>
-</div>
+<!-- FAB -->
+<button class="fab" onclick="openNewCase()" title="เปิดเคสใหม่">＋</button>
 
-<!-- Main Content -->
-<div class="content" id="mainContent" style="display:none;">
-  <a class="new-case-btn" href="https://isupport-infinity.github.io/helpdesk-form/" target="_blank">
-    ＋ เปิดเคสใหม่
-  </a>
-
-  <!-- Active Cases -->
-  <div class="section-label" id="activeSectionLabel">เคสที่กำลังดำเนินการ</div>
-  <div id="activeCases"></div>
-
-  <!-- Completed Cases -->
-  <div class="section-label" style="margin-top:24px;">ปิดล่าสุด</div>
-  <div id="completedCases"></div>
-</div>
-
-<!-- Update Status Modal -->
+<!-- Modal -->
 <div class="overlay" id="overlay" onclick="closeModal(event)">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
-    <div class="modal-caseid" id="modalCaseId"></div>
+    <span class="modal-caseid" id="modalCaseId"></span>
     <div class="modal-title" id="modalTitle"></div>
     <div class="modal-meta" id="modalMeta"></div>
     <div class="modal-current">
@@ -357,15 +475,12 @@ body {
     </div>
     <div class="modal-label">เปลี่ยนสถานะเป็น</div>
     <div class="status-btns" id="statusBtns"></div>
-    <div class="modal-label" style="margin-top:4px;">บันทึกการแก้ไข (Update Log)</div>
-    <textarea id="updateNote" placeholder="ระบุรายละเอียดการดำเนินการ..." style="width:100%;padding:10px 14px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:14px;font-family:inherit;resize:vertical;min-height:80px;margin-bottom:16px;"></textarea>
+    <div class="modal-label">บันทึกการแก้ไข (Update Log)</div>
+    <textarea id="updateNote" class="modal-note" placeholder="ระบุรายละเอียดการดำเนินการ..."></textarea>
     <button class="update-btn" id="updateBtn" onclick="updateStatus()" disabled>อัพเดทสถานะ</button>
-    <button class="cancel-btn" onclick="closeModal()">ยกเลิก</button>
+    <span class="cancel-link" onclick="closeModal()">ยกเลิก</span>
   </div>
 </div>
-
-<!-- FAB -->
-<a class="fab" href="https://isupport-infinity.github.io/helpdesk-form/" target="_blank" title="เปิดเคสใหม่">＋</a>
 
 <script>
 // ===== CONFIG =====
@@ -380,13 +495,42 @@ let engineerName  = '';
 let allCases      = [];
 let selectedCase  = null;
 let selectedStatus = '';
+let currentView   = 'myCases';
 
-// Status flow
 const STATUS_NEXT = {
   'New':         ['In Progress'],
   'In Progress': ['Completed'],
   'Completed':   []
 };
+
+// ===== HELPERS =====
+function timeAgo(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d)) return '';
+  const diff = Math.floor((Date.now() - d) / 1000);
+  if (diff < 60)   return 'เมื่อกี้';
+  if (diff < 3600) return `${Math.floor(diff/60)} นาทีที่แล้ว`;
+  if (diff < 86400) return `${Math.floor(diff/3600)} ชม. ที่แล้ว`;
+  if (diff < 604800) return `${Math.floor(diff/86400)} วันที่แล้ว`;
+  return d.toLocaleDateString('th-TH');
+}
+
+function badgeHtml(text, cls) {
+  return `<span class="badge badge-${cls}">${text}</span>`;
+}
+
+function severityBadge(sev) {
+  const s = (sev || '').toLowerCase();
+  const cls = s === 'critical' ? 'critical' : s === 'high' ? 'high' : s === 'medium' ? 'medium' : 'low';
+  return badgeHtml(sev || '-', cls);
+}
+
+function statusBadge(status) {
+  const s = (status || '').replace(' ','').toLowerCase();
+  const cls = s === 'new' ? 'new' : s === 'inprogress' ? 'inprogress' : 'closed';
+  return badgeHtml(status || '-', cls);
+}
 
 // ===== INIT =====
 async function init() {
@@ -398,7 +542,6 @@ async function init() {
     setUserBadge(engineerName);
     await loadMyCases();
   } catch(e) {
-    // Fallback: ไม่อยู่ใน Teams → แสดง Engineer selector
     await loadEngineerSelector();
   }
 }
@@ -406,8 +549,8 @@ async function init() {
 function setUserBadge(name) {
   const parts = name.trim().split(' ');
   const initials = parts.length >= 2
-    ? parts[0][0] + parts[parts.length - 1][0]
-    : name.substring(0, 2);
+    ? parts[0][0] + parts[parts.length-1][0]
+    : name.substring(0,2);
   document.getElementById('avatarText').textContent = initials.toUpperCase();
   document.getElementById('userName').textContent = name;
 }
@@ -425,7 +568,7 @@ async function loadEngineerSelector() {
     return;
   }
   try {
-    const res  = await fetch(GET_ENGINEERS_URL, { method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}' });
+    const res  = await fetch(GET_ENGINEERS_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' });
     const data = await res.json();
     const engineers = Array.isArray(data) ? data : (data.value || []);
     const sel = document.getElementById('engDropdown');
@@ -455,11 +598,11 @@ async function confirmEngineer() {
 // ===== LOAD CASES =====
 async function loadMyCases() {
   document.getElementById('loadingScreen').style.display = 'flex';
-  document.getElementById('mainContent').style.display = 'none';
+  document.getElementById('mainContent').style.display   = 'none';
   try {
-    const res  = await fetch(GET_MY_CASES_URL, {
+    const res = await fetch(GET_MY_CASES_URL, {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ engineerEmail })
     });
     allCases = await res.json();
@@ -469,39 +612,40 @@ async function loadMyCases() {
     alert('โหลดข้อมูลไม่สำเร็จ');
   }
   document.getElementById('loadingScreen').style.display = 'none';
-  document.getElementById('mainContent').style.display = 'block';
+  document.getElementById('mainContent').style.display   = 'block';
 }
 
-// ===== RENDER CASES =====
+// ===== RENDER =====
 function renderCases() {
   const active    = allCases.filter(c => c.status !== 'Completed');
-  const completed = allCases.filter(c => c.status === 'Completed').slice(0, 5);
+  const completed = allCases.filter(c => c.status === 'Completed');
 
-  document.getElementById('activeSectionLabel').textContent =
-    `เคสที่กำลังดำเนินการ (${active.length})`;
+  document.getElementById('activeSectionLabel').textContent  = `เปิดอยู่ (${active.length})`;
+  document.getElementById('closedSectionLabel').textContent  = `ปิดล่าสุด (${Math.min(completed.length,5)})`;
+  document.getElementById('historySectionLabel').textContent = `ประวัติเคสทั้งหมด (${completed.length})`;
 
   document.getElementById('activeCases').innerHTML =
-    active.length ? active.map(caseCard).join('') : emptyState('ไม่มีเคสที่ดำเนินการอยู่');
+    active.length ? active.map(c => caseCard(c, false)).join('') : emptyState('ไม่มีเคสที่กำลังดำเนินการ');
 
   document.getElementById('completedCases').innerHTML =
-    completed.length ? completed.map(caseCard).join('') : emptyState('ยังไม่มีเคสที่ปิดแล้ว');
+    completed.length ? completed.slice(0,5).map(c => caseCard(c, true)).join('') : emptyState('ยังไม่มีเคสที่ปิดแล้ว');
+
+  document.getElementById('historyCases').innerHTML =
+    completed.length ? completed.map(c => caseCard(c, true)).join('') : emptyState('ยังไม่มีเคสที่ปิดแล้ว');
 }
 
-function caseCard(c) {
-  const sev = (c.severity || '').toLowerCase();
-  const sevClass = sev === 'critical' ? 'sev-critical' : sev === 'high' ? 'sev-high' : sev === 'medium' ? 'sev-medium' : 'sev-low';
-  const statusKey = (c.status || '').replace(' ','').toLowerCase();
-  const statusClass = statusKey === 'new' ? 'status-new' : statusKey === 'inprogress' ? 'status-inprogress' : 'status-completed';
-  const time = c.receivedTime ? new Date(c.receivedTime).toLocaleDateString('th-TH') : '';
+function caseCard(c, isClosed) {
+  const time = timeAgo(c.receivedTime);
+  const meta = [c.customer, time].filter(Boolean).join(' · ');
+  const rightBadge = isClosed ? badgeHtml('Closed','closed') : severityBadge(c.severity);
   return `
     <div class="case-card" onclick='openModal(${JSON.stringify(c).replace(/'/g,"&#39;")})'>
-      <span class="case-id">${c.caseId || '-'}</span>
+      <span class="case-id-pill">${c.caseId || '-'}</span>
       <div class="case-body">
         <div class="case-title">${c.caseTitle || '-'}</div>
-        <div class="case-meta">${c.customer || ''} ${time ? '· ' + time : ''}</div>
+        <div class="case-meta">${meta}</div>
       </div>
-      <span class="sev ${sevClass}">${c.severity || '-'}</span>
-      <span class="status-badge ${statusClass}">${c.status || '-'}</span>
+      ${rightBadge}
     </div>`;
 }
 
@@ -509,30 +653,42 @@ function emptyState(msg) {
   return `<div class="empty-state"><div class="empty-icon">📋</div>${msg}</div>`;
 }
 
+// ===== VIEW SWITCH =====
+function switchView(view) {
+  currentView = view;
+  document.getElementById('myCasesView').style.display = view === 'myCases' ? 'block' : 'none';
+  document.getElementById('historyView').style.display  = view === 'history'  ? 'block' : 'none';
+  document.getElementById('pageTitle').textContent =
+    view === 'myCases' ? 'เคสของฉัน' : 'ประวัติเคส';
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById(view === 'myCases' ? 'navMyCases' : 'navHistory').classList.add('active');
+}
+
+function openNewCase() {
+  window.open(NEW_CASE_URL, '_blank');
+}
+
 // ===== MODAL =====
 function openModal(c) {
   selectedCase   = c;
   selectedStatus = '';
   document.getElementById('modalCaseId').textContent = c.caseId || '';
-  document.getElementById('modalTitle').textContent  = c.caseTitle || '';
-  document.getElementById('modalMeta').textContent   = `${c.customer || ''} · ${c.severity || ''} · ${c.receivedTime ? new Date(c.receivedTime).toLocaleDateString('th-TH') : ''}`;
+  document.getElementById('modalTitle').textContent  = c.caseTitle || '-';
+  document.getElementById('modalMeta').textContent   =
+    [c.customer, c.severity, c.receivedTime ? new Date(c.receivedTime).toLocaleDateString('th-TH') : ''].filter(Boolean).join(' · ');
 
-  const statusKey = (c.status || '').replace(' ','').toLowerCase();
-  const statusClass = statusKey === 'new' ? 'status-new' : statusKey === 'inprogress' ? 'status-inprogress' : 'status-completed';
+  const s = (c.status || '').replace(' ','').toLowerCase();
+  const cls = s === 'new' ? 'badge-new' : s === 'inprogress' ? 'badge-inprogress' : 'badge-closed';
   document.getElementById('modalCurrentStatus').innerHTML =
-    `<span class="status-badge ${statusClass}">${c.status || '-'}</span>`;
+    `<span class="badge ${cls}">${c.status || '-'}</span>`;
 
   const nextStatuses = STATUS_NEXT[c.status] || [];
-  const btns = document.getElementById('statusBtns');
-  if (nextStatuses.length) {
-    btns.innerHTML = nextStatuses.map(s =>
-      `<button class="status-btn" onclick="selectStatus('${s}',this)">${s}</button>`
-    ).join('');
-  } else {
-    btns.innerHTML = `<p style="font-size:13px;color:#616161;">เคสนี้ปิดแล้ว ไม่สามารถเปลี่ยนสถานะได้</p>`;
-  }
+  document.getElementById('statusBtns').innerHTML = nextStatuses.length
+    ? nextStatuses.map(s => `<button class="status-btn" onclick="selectStatus('${s}',this)">${s}</button>`).join('')
+    : `<p style="font-size:13px;color:#9ca3af;">เคสนี้ปิดแล้ว ไม่สามารถเปลี่ยนสถานะได้</p>`;
+
   document.getElementById('updateBtn').disabled = true;
-  document.getElementById('updateNote').value = '';
+  document.getElementById('updateNote').value   = '';
   document.getElementById('overlay').classList.add('show');
 }
 
@@ -546,8 +702,7 @@ function selectStatus(status, btn) {
 function closeModal(e) {
   if (!e || e.target === document.getElementById('overlay')) {
     document.getElementById('overlay').classList.remove('show');
-    selectedCase = null;
-    selectedStatus = '';
+    selectedCase = null; selectedStatus = '';
   }
 }
 
@@ -559,12 +714,12 @@ async function updateStatus() {
   try {
     await fetch(UPDATE_STATUS_URL, {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
-        itemId: selectedCase.id,
-        status: selectedStatus,
-        updateNote: document.getElementById('updateNote').value.trim(),
-        engineerName: engineerProfile?.name || engineerEmail || ''
+        itemId:       selectedCase.id,
+        status:       selectedStatus,
+        updateNote:   document.getElementById('updateNote').value.trim(),
+        engineerName: engineerName || engineerEmail || ''
       })
     });
     document.getElementById('overlay').classList.remove('show');
