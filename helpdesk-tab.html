@@ -476,7 +476,7 @@ body {
     <div class="modal-label">เปลี่ยนสถานะเป็น</div>
     <div class="status-btns" id="statusBtns"></div>
     <div class="modal-label">บันทึกการแก้ไข (Update Log)</div>
-    <textarea id="updateNote" class="modal-note" placeholder="ระบุรายละเอียดการดำเนินการ..."></textarea>
+    <textarea id="updateNote" class="modal-note" placeholder="ระบุรายละเอียดการดำเนินการ..." oninput="checkCanUpdate()"></textarea>
     <button class="update-btn" id="updateBtn" onclick="updateStatus()" disabled>อัพเดทสถานะ</button>
     <span class="cancel-link" onclick="closeModal()">ยกเลิก</span>
   </div>
@@ -697,7 +697,13 @@ function selectStatus(status, btn) {
   selectedStatus = status;
   document.querySelectorAll('.status-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
-  document.getElementById('updateBtn').disabled = false;
+  checkCanUpdate();
+}
+
+function checkCanUpdate() {
+  const hasNote   = document.getElementById('updateNote').value.trim().length > 0;
+  const hasStatus = !!selectedStatus;
+  document.getElementById('updateBtn').disabled = !(hasNote || hasStatus);
 }
 
 function closeModal(e) {
@@ -718,7 +724,7 @@ async function updateStatus() {
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
         itemId:       selectedCase.id,
-        status:       selectedStatus,
+        status:       selectedStatus || selectedCase.status,
         updateNote:   document.getElementById('updateNote').value.trim(),
         engineerName: engineerName || engineerEmail || ''
       })
