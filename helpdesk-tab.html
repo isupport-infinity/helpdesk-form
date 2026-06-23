@@ -702,7 +702,7 @@ function openModal(c) {
   sel.disabled = c.status === 'Completed';
 
   const logEl  = document.getElementById('modalUpdateLog');
-  const logText = (c.updateLog || '').trim();
+  const logText = formatUpdateLog(c.updateLog || '');
   if (logText) {
     document.getElementById('modalUpdateLogText').textContent = logText;
     logEl.style.display = 'block';
@@ -755,6 +755,26 @@ async function updateStatus() {
     btn.disabled = false;
     btn.textContent = 'อัพเดทสถานะ';
   }
+}
+
+// ===== FORMAT UPDATE LOG =====
+function formatUpdateLog(raw) {
+  if (!raw) return '';
+  // แปลง <br> เป็น newline ก่อน แล้วค่อย strip tags อื่น
+  let text = raw
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<\/div>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&');
+  // แยก entry ด้วย ---
+  const entries = text.split(/\n?---+\n?/)
+    .map(e => e.trim())
+    .filter(Boolean);
+  return entries.join('\n\n─────────────────────\n\n');
 }
 
 // ===== START =====
