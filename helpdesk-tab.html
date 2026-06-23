@@ -357,6 +357,8 @@ body {
     </div>
     <div class="modal-label">เปลี่ยนสถานะเป็น</div>
     <div class="status-btns" id="statusBtns"></div>
+    <div class="modal-label" style="margin-top:4px;">บันทึกการแก้ไข (Update Log)</div>
+    <textarea id="updateNote" placeholder="ระบุรายละเอียดการดำเนินการ..." style="width:100%;padding:10px 14px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:14px;font-family:inherit;resize:vertical;min-height:80px;margin-bottom:16px;"></textarea>
     <button class="update-btn" id="updateBtn" onclick="updateStatus()" disabled>อัพเดทสถานะ</button>
     <button class="cancel-btn" onclick="closeModal()">ยกเลิก</button>
   </div>
@@ -530,6 +532,7 @@ function openModal(c) {
     btns.innerHTML = `<p style="font-size:13px;color:#616161;">เคสนี้ปิดแล้ว ไม่สามารถเปลี่ยนสถานะได้</p>`;
   }
   document.getElementById('updateBtn').disabled = true;
+  document.getElementById('updateNote').value = '';
   document.getElementById('overlay').classList.add('show');
 }
 
@@ -557,7 +560,12 @@ async function updateStatus() {
     await fetch(UPDATE_STATUS_URL, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ itemId: selectedCase.id, status: selectedStatus })
+      body: JSON.stringify({
+        itemId: selectedCase.id,
+        status: selectedStatus,
+        updateNote: document.getElementById('updateNote').value.trim(),
+        engineerName: engineerProfile?.name || engineerEmail || ''
+      })
     });
     document.getElementById('overlay').classList.remove('show');
     await loadMyCases();
