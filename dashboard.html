@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>iCare Helpdesk · Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --primary:   #4b3fce;
+  --primary-d: #2d2a6e;
+  --primary-l: #ede9ff;
+  --green:     #10b981;
+  --amber:     #f59e0b;
+  --red:       #ef4444;
+  --indigo:    #6366f1;
+  --orange:    #f97316;
+  --bg:        #f4f5fb;
+  --card:      #ffffff;
+  --border:    #e8e8f0;
+  --text:      #1a1a2e;
+  --muted:     #6b7280;
+  --radius:    14px;
+  --shadow:    0 2px 12px rgba(30,27,75,0.08);
+  --shadow-h:  0 8px 28px rgba(30,27,75,0.14);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ── NAV ────────────────────────────────── */
+.nav {
+  background: var(--primary-d);
+  padding: 0 28px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 16px rgba(30,27,75,0.3);
+}
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.nav-icon {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg,#6c63ff,#4b3fce);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+  box-shadow: 0 2px 8px rgba(75,63,206,0.5);
+}
+.nav-title {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+.nav-subtitle {
+  color: rgba(255,255,255,0.45);
+  font-size: 12px;
+  margin-top: 1px;
+}
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.date-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  padding: 5px 12px;
+}
+.date-group label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+  white-space: nowrap;
+}
+.date-group input[type="date"] {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  colorscheme: dark;
+}
+.date-sep {
+  color: rgba(255,255,255,0.35);
+  font-size: 12px;
+}
+.btn-filter {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.15s, transform 0.1s;
+  box-shadow: 0 2px 8px rgba(75,63,206,0.4);
+}
+.btn-filter:hover { background: #5d52e0; transform: translateY(-1px); }
+.btn-filter:active { transform: translateY(0); }
+
+/* ── LOADING ────────────────────────────── */
+.loader-overlay {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 200;
+  transition: opacity 0.4s;
+}
+.loader-overlay.hide { opacity: 0; pointer-events: none; }
+.loader-ring {
+  width: 48px; height: 48px;
+  border: 4px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loader-text { color: var(--muted); font-size: 14px; }
+
+/* ── CONTENT ────────────────────────────── */
+.content {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px 24px 48px;
+}
+
+/* ── SECTION TITLE ──────────────────────── */
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.section-head h2 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+.section-head::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ── KPI CARDS ──────────────────────────── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+.kpi-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 20px 20px 16px;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.kpi-card:hover {
+  box-shadow: var(--shadow-h);
+  transform: translateY(-2px);
+}
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.kpi-card.total::before  { background: linear-gradient(90deg, var(--primary), #6c63ff); }
+.kpi-card.open::before   { background: linear-gradient(90deg, var(--indigo), #818cf8); }
+.kpi-card.progress::before { background: linear-gradient(90deg, var(--amber), #fbbf24); }
+.kpi-card.done::before   { background: linear-gradient(90deg, var(--green), #34d399); }
+.kpi-card.critical::before { background: linear-gradient(90deg, var(--red), #f87171); }
+
+.kpi-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+.kpi-value {
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 8px;
+  letter-spacing: -1px;
+}
+.kpi-card.total  .kpi-value { color: var(--primary); }
+.kpi-card.open   .kpi-value { color: var(--indigo); }
+.kpi-card.progress .kpi-value { color: var(--amber); }
+.kpi-card.done   .kpi-value { color: var(--green); }
+.kpi-card.critical .kpi-value { color: var(--red); }
+
+.kpi-sub {
+  font-size: 12px;
+  color: var(--muted);
+}
+.kpi-icon {
+  position: absolute;
+  right: 16px;
+  bottom: 14px;
+  font-size: 30px;
+  opacity: 0.12;
+}
+
+/* ── CHART GRID ─────────────────────────── */
+.chart-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.chart-grid.single { grid-template-columns: 1fr; }
+
+.chart-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 22px 24px 20px;
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.2s;
+}
+.chart-card:hover { box-shadow: var(--shadow-h); }
+
+.chart-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.chart-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+.chart-desc {
+  font-size: 12px;
+  color: var(--muted);
+}
+.chart-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: var(--primary-l);
+  color: var(--primary);
+}
+
+.chart-wrap {
+  position: relative;
+  height: 280px;
+}
+.chart-wrap.tall { height: 340px; }
+
+/* Donut center text */
+.donut-center {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+}
+.donut-center-num {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1;
+}
+.donut-center-label {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* ── EMPTY STATE ────────────────────────── */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 8px;
+  color: var(--muted);
+}
+.empty-icon { font-size: 32px; opacity: 0.4; }
+.empty-text { font-size: 13px; }
+
+/* ── FOOTER ─────────────────────────────── */
+.footer {
+  text-align: center;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 32px;
+  opacity: 0.6;
+}
+
+/* ── RESPONSIVE ─────────────────────────── */
+@media (max-width: 900px) {
+  .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+  .chart-grid { grid-template-columns: 1fr; }
+  .date-group { display: none; }
+}
+@media (max-width: 580px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div class="loader-overlay" id="loader">
+  <div class="loader-ring"></div>
+  <div class="loader-text">กำลังโหลดข้อมูล...</div>
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-brand">
+    <div class="nav-icon">🎫</div>
+    <div>
+      <div class="nav-title">iCare Helpdesk</div>
+      <div class="nav-subtitle">Analytics Dashboard</div>
+    </div>
+  </div>
+  <div class="nav-right">
+    <div class="date-group">
+      <label>จาก</label>
+      <input type="date" id="dateFrom">
+      <span class="date-sep">—</span>
+      <label>ถึง</label>
+      <input type="date" id="dateTo">
+    </div>
+    <button class="btn-filter" onclick="loadData()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+      </svg>
+      โหลดข้อมูล
+    </button>
+  </div>
+</nav>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- KPI -->
+  <div class="section-head"><h2>ภาพรวม</h2></div>
+  <div class="kpi-grid">
+    <div class="kpi-card total">
+      <div class="kpi-label">เคสทั้งหมด</div>
+      <div class="kpi-value" id="kpiTotal">—</div>
+      <div class="kpi-sub" id="kpiTotalSub">ในช่วงที่เลือก</div>
+      <div class="kpi-icon">📊</div>
+    </div>
+    <div class="kpi-card open">
+      <div class="kpi-label">รอดำเนินการ</div>
+      <div class="kpi-value" id="kpiNew">—</div>
+      <div class="kpi-sub">สถานะ New</div>
+      <div class="kpi-icon">🆕</div>
+    </div>
+    <div class="kpi-card progress">
+      <div class="kpi-label">กำลังดำเนินการ</div>
+      <div class="kpi-value" id="kpiProgress">—</div>
+      <div class="kpi-sub">In Progress</div>
+      <div class="kpi-icon">⚙️</div>
+    </div>
+    <div class="kpi-card done">
+      <div class="kpi-label">ปิดแล้ว</div>
+      <div class="kpi-value" id="kpiDone">—</div>
+      <div class="kpi-sub">Completed</div>
+      <div class="kpi-icon">✅</div>
+    </div>
+    <div class="kpi-card critical">
+      <div class="kpi-label">Critical</div>
+      <div class="kpi-value" id="kpiCritical">—</div>
+      <div class="kpi-sub">ความเร่งด่วนสูงสุด</div>
+      <div class="kpi-icon">🚨</div>
+    </div>
+  </div>
+
+  <!-- ROW 1: Status + Severity -->
+  <div class="section-head"><h2>การกระจายเคส</h2></div>
+  <div class="chart-grid" style="margin-bottom:16px;">
+
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">สถานะเคส</div>
+          <div class="chart-desc">แบ่งตาม Status ปัจจุบัน</div>
+        </div>
+        <span class="chart-badge" id="badgeStatus">0 เคส</span>
+      </div>
+      <div class="chart-wrap" style="height:260px;">
+        <canvas id="chartStatus"></canvas>
+        <div class="donut-center" id="donutCenter">
+          <div class="donut-center-num" id="donutNum">0</div>
+          <div class="donut-center-label">ทั้งหมด</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">ระดับความรุนแรง</div>
+          <div class="chart-desc">แบ่งตาม Severity</div>
+        </div>
+        <span class="chart-badge" id="badgeSev">0 เคส</span>
+      </div>
+      <div class="chart-wrap" style="height:260px;">
+        <canvas id="chartSev"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ROW 2: Customer + Engineer -->
+  <div class="section-head"><h2>การวิเคราะห์เชิงลึก</h2></div>
+  <div class="chart-grid">
+
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">เคสตาม Customer</div>
+          <div class="chart-desc">Top 10 ลูกค้าที่มีเคสสูงสุด</div>
+        </div>
+        <span class="chart-badge" id="badgeCust">—</span>
+      </div>
+      <div class="chart-wrap tall">
+        <canvas id="chartCust"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Workload ต่อ Engineer</div>
+          <div class="chart-desc">จำนวนเคสแยกตาม Status</div>
+        </div>
+        <span class="chart-badge" id="badgeEng">—</span>
+      </div>
+      <div class="chart-wrap tall">
+        <canvas id="chartEng"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer" id="lastUpdate"></div>
+</div>
+
+<script>
+// ─── CONFIG ────────────────────────────────────────────────────────────────
+const FLOW_URL = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/fcf06042058540ebbb40ed15dd5e0ab3/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=tb05UdAglSljp2Zm58U-GrtEVHWpXm_R4LXNwhSdarI';
+
+// ─── CHARTS INSTANCES ──────────────────────────────────────────────────────
+let charts = {};
+
+// ─── CHART.JS GLOBAL DEFAULTS ──────────────────────────────────────────────
+Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+Chart.defaults.plugins.legend.labels.padding = 16;
+Chart.defaults.plugins.tooltip.padding = 12;
+Chart.defaults.plugins.tooltip.cornerRadius = 8;
+Chart.defaults.plugins.tooltip.titleFont = { size: 13, weight: 'bold' };
+Chart.defaults.plugins.tooltip.bodyFont  = { size: 12 };
+Chart.defaults.animation.duration = 700;
+Chart.defaults.animation.easing   = 'easeOutQuart';
+
+// ─── COLORS ────────────────────────────────────────────────────────────────
+const C = {
+  primary:   '#4b3fce',
+  indigo:    '#6366f1',
+  amber:     '#f59e0b',
+  green:     '#10b981',
+  red:       '#ef4444',
+  orange:    '#f97316',
+  yellow:    '#eab308',
+  teal:      '#14b8a6',
+  pink:      '#ec4899',
+  sky:       '#0ea5e9',
+  palette:   ['#4b3fce','#6366f1','#8b5cf6','#a78bfa','#c4b5fd',
+               '#06b6d4','#10b981','#f59e0b','#ef4444','#f97316']
+};
+
+// ─── DATE INIT ─────────────────────────────────────────────────────────────
+function initDates() {
+  const to   = new Date();
+  const from = new Date();
+  from.setDate(from.getDate() - 29);
+  document.getElementById('dateTo').value   = fmt(to);
+  document.getElementById('dateFrom').value = fmt(from);
+}
+function fmt(d) {
+  return d.toISOString().split('T')[0];
+}
+
+// ─── LOAD DATA ─────────────────────────────────────────────────────────────
+async function loadData() {
+  const startDate = document.getElementById('dateFrom').value;
+  const endDate   = document.getElementById('dateTo').value;
+  showLoader(true);
+
+  try {
+    const res  = await fetch(FLOW_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ startDate, endDate })
+    });
+    const raw  = await res.json();
+    const data = Array.isArray(raw) ? raw : (raw.value || []);
+    render(data, startDate, endDate);
+  } catch(e) {
+    alert('ไม่สามารถโหลดข้อมูลได้ กรุณาตรวจสอบ Flow URL');
+  }
+
+  showLoader(false);
+}
+
+// ─── RENDER ────────────────────────────────────────────────────────────────
+function render(data, from, to) {
+  const total    = data.length;
+  const newCases = data.filter(d => d.status === 'New').length;
+  const inProg   = data.filter(d => d.status === 'In Progress').length;
+  const done     = data.filter(d => d.status === 'Completed').length;
+  const critical = data.filter(d => (d.severity||'').toLowerCase() === 'critical').length;
+
+  // KPI
+  animateNum('kpiTotal',    total);
+  animateNum('kpiNew',      newCases);
+  animateNum('kpiProgress', inProg);
+  animateNum('kpiDone',     done);
+  animateNum('kpiCritical', critical);
+
+  const d1 = new Date(from).toLocaleDateString('th-TH');
+  const d2 = new Date(to).toLocaleDateString('th-TH');
+  document.getElementById('kpiTotalSub').textContent = `${d1} – ${d2}`;
+
+  // Chart: Status donut
+  document.getElementById('badgeStatus').textContent = `${total} เคส`;
+  document.getElementById('donutNum').textContent = total;
+  buildDonut('chartStatus', {
+    labels: ['New', 'In Progress', 'Completed'],
+    data:   [newCases, inProg, done],
+    colors: [C.indigo, C.amber, C.green]
+  });
+
+  // Chart: Severity
+  const sevOrder = ['Critical','High','Medium','Low'];
+  const sevData  = sevOrder.map(s => data.filter(d => (d.severity||'') === s).length);
+  document.getElementById('badgeSev').textContent = `${total} เคส`;
+  buildBarH('chartSev', {
+    labels: sevOrder,
+    data:   sevData,
+    colors: [C.red, C.orange, C.yellow, C.green]
+  });
+
+  // Chart: Customer (top 10)
+  const custMap = {};
+  data.forEach(d => {
+    const k = d.customer || 'Unknown';
+    custMap[k] = (custMap[k] || 0) + 1;
+  });
+  const custSorted = Object.entries(custMap)
+    .sort((a,b) => b[1]-a[1]).slice(0,10);
+  document.getElementById('badgeCust').textContent = `${Object.keys(custMap).length} ลูกค้า`;
+  buildBarV('chartCust', {
+    labels: custSorted.map(x=>x[0]),
+    data:   custSorted.map(x=>x[1]),
+    color:  C.primary,
+    label:  'จำนวนเคส'
+  });
+
+  // Chart: Engineer stacked
+  const engMap = {};
+  data.forEach(d => {
+    const k = d.engineer || 'Unknown';
+    if (!engMap[k]) engMap[k] = { New:0, 'In Progress':0, Completed:0 };
+    if (d.status in engMap[k]) engMap[k][d.status]++;
+  });
+  const engSorted = Object.entries(engMap).sort((a,b)=>{
+    const ta = Object.values(a[1]).reduce((s,v)=>s+v,0);
+    const tb = Object.values(b[1]).reduce((s,v)=>s+v,0);
+    return tb - ta;
+  }).slice(0,8);
+  document.getElementById('badgeEng').textContent = `${engSorted.length} engineers`;
+  buildBarStacked('chartEng', {
+    labels:   engSorted.map(x=>shortName(x[0])),
+    datasets: [
+      { label:'New',         data: engSorted.map(x=>x[1].New),            color: C.indigo },
+      { label:'In Progress', data: engSorted.map(x=>x[1]['In Progress']), color: C.amber  },
+      { label:'Completed',   data: engSorted.map(x=>x[1].Completed),      color: C.green  }
+    ]
+  });
+
+  document.getElementById('lastUpdate').textContent =
+    `อัพเดทล่าสุด: ${new Date().toLocaleString('th-TH')}  ·  ข้อมูล ${total} เคส ระหว่าง ${d1} ถึง ${d2}`;
+}
+
+// ─── CHART BUILDERS ────────────────────────────────────────────────────────
+function destroyChart(id) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+}
+
+function buildDonut(id, { labels, data, colors }) {
+  destroyChart(id);
+  const ctx = document.getElementById(id).getContext('2d');
+  charts[id] = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{
+        data,
+        backgroundColor: colors,
+        borderWidth: 3,
+        borderColor: '#fff',
+        hoverOffset: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '68%',
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { padding: 20, boxWidth: 10, boxHeight: 10 }
+        },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${ctx.label}: ${ctx.parsed} เคส`
+          }
+        }
+      }
+    }
+  });
+}
+
+function buildBarH(id, { labels, data, colors }) {
+  destroyChart(id);
+  const ctx = document.getElementById(id).getContext('2d');
+  charts[id] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data,
+        backgroundColor: colors,
+        borderRadius: 6,
+        borderSkipped: false,
+        barThickness: 28
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: { label: ctx => ` ${ctx.parsed.x} เคส` }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: '#f0f0f8' },
+          ticks: { color: '#9ca3af', font: { size: 12 } },
+          beginAtZero: true
+        },
+        y: {
+          grid: { display: false },
+          ticks: { color: '#374151', font: { size: 13, weight: '600' } }
+        }
+      }
+    }
+  });
+}
+
+function buildBarV(id, { labels, data, color, label }) {
+  destroyChart(id);
+  const ctx = document.getElementById(id).getContext('2d');
+
+  // gradient
+  const grad = ctx.createLinearGradient(0, 0, 0, 340);
+  grad.addColorStop(0,   color + 'dd');
+  grad.addColorStop(1,   color + '55');
+
+  charts[id] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label,
+        data,
+        backgroundColor: grad,
+        borderRadius: 7,
+        borderSkipped: false,
+        borderColor: color,
+        borderWidth: 1.5
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: { label: ctx => ` ${ctx.parsed.y} เคส` }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: '#374151', font: { size: 11, weight: '600' }, maxRotation: 30 }
+        },
+        y: {
+          grid: { color: '#f0f0f8' },
+          ticks: { color: '#9ca3af', font: { size: 12 } },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+}
+
+function buildBarStacked(id, { labels, datasets }) {
+  destroyChart(id);
+  const ctx = document.getElementById(id).getContext('2d');
+  charts[id] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: datasets.map((ds, i) => ({
+        label:           ds.label,
+        data:            ds.data,
+        backgroundColor: ds.color + 'cc',
+        borderColor:     ds.color,
+        borderWidth:     1.5,
+        borderRadius:    i === datasets.length-1 ? 7 : 0,
+        borderSkipped:   false
+      }))
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { padding: 18, boxWidth: 10, boxHeight: 10 }
+        },
+        tooltip: {
+          mode: 'index',
+          callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y} เคส` }
+        }
+      },
+      scales: {
+        x: {
+          stacked: true,
+          grid: { display: false },
+          ticks: { color: '#374151', font: { size: 11, weight: '600' } }
+        },
+        y: {
+          stacked: true,
+          grid: { color: '#f0f0f8' },
+          ticks: { color: '#9ca3af', font: { size: 12 } },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+}
+
+// ─── HELPERS ───────────────────────────────────────────────────────────────
+function animateNum(id, target) {
+  const el = document.getElementById(id);
+  const start = parseInt(el.textContent) || 0;
+  const dur = 600, step = 16;
+  let t = 0;
+  const timer = setInterval(() => {
+    t += step;
+    const prog = Math.min(t / dur, 1);
+    const ease = 1 - Math.pow(1 - prog, 3);
+    el.textContent = Math.round(start + (target - start) * ease);
+    if (prog >= 1) clearInterval(timer);
+  }, step);
+}
+
+function shortName(name) {
+  if (!name) return 'Unknown';
+  const parts = name.trim().split(' ');
+  if (parts.length >= 2) return parts[0] + ' ' + parts[1][0] + '.';
+  return name.length > 12 ? name.substring(0,12)+'…' : name;
+}
+
+function showLoader(show) {
+  document.getElementById('loader').classList.toggle('hide', !show);
+}
+
+// ─── INIT ──────────────────────────────────────────────────────────────────
+initDates();
+loadData();
+</script>
+</body>
+</html>
