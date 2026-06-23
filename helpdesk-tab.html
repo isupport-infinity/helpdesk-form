@@ -474,7 +474,9 @@ body {
       <span id="modalCurrentStatus"></span>
     </div>
     <div class="modal-label">เปลี่ยนสถานะเป็น</div>
-    <div class="status-btns" id="statusBtns"></div>
+    <select id="statusSelect" onchange="onStatusChange()" style="width:100%;padding:11px 14px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:14px;font-family:inherit;margin-bottom:16px;color:#374151;background:#fff;">
+      <option value="">-- ไม่เปลี่ยนสถานะ --</option>
+    </select>
     <div class="modal-label">บันทึกการแก้ไข (Update Log)</div>
     <textarea id="updateNote" class="modal-note" placeholder="ระบุรายละเอียดการดำเนินการ..." oninput="checkCanUpdate()"></textarea>
     <button class="update-btn" id="updateBtn" onclick="updateStatus()" disabled>อัพเดทสถานะ</button>
@@ -683,20 +685,25 @@ function openModal(c) {
   document.getElementById('modalCurrentStatus').innerHTML =
     `<span class="badge ${cls}">${c.status || '-'}</span>`;
 
-  const nextStatuses = STATUS_NEXT[c.status] || [];
-  document.getElementById('statusBtns').innerHTML = nextStatuses.length
-    ? nextStatuses.map(s => `<button class="status-btn" onclick="selectStatus('${s}',this)">${s}</button>`).join('')
-    : `<p style="font-size:13px;color:#9ca3af;">เคสนี้ปิดแล้ว ไม่สามารถเปลี่ยนสถานะได้</p>`;
+  const allStatuses = ['In Progress', 'Completed'];
+  const sel = document.getElementById('statusSelect');
+  sel.innerHTML = '<option value="">-- ไม่เปลี่ยนสถานะ --</option>';
+  allStatuses.forEach(s => {
+    if (s !== c.status) {
+      const opt = document.createElement('option');
+      opt.value = s; opt.textContent = s;
+      sel.appendChild(opt);
+    }
+  });
+  sel.disabled = c.status === 'Completed';
 
   document.getElementById('updateBtn').disabled = true;
   document.getElementById('updateNote').value   = '';
   document.getElementById('overlay').classList.add('show');
 }
 
-function selectStatus(status, btn) {
-  selectedStatus = status;
-  document.querySelectorAll('.status-btn').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
+function onStatusChange() {
+  selectedStatus = document.getElementById('statusSelect').value;
   checkCanUpdate();
 }
 
