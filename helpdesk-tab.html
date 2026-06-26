@@ -658,7 +658,10 @@ body {
 <!-- ===== SIDEBAR ===== -->
 <div class="sidebar">
   <div class="sidebar-logo">
-    <div class="sidebar-logo-icon">🎫</div>
+    <img src="logo.png" alt="Infinity Solution Service"
+      style="height:32px;width:auto;object-fit:contain;border-radius:6px;background:#fff;padding:2px 5px;flex-shrink:0;"
+      onerror="this.style.display='none';document.getElementById('sidebarFallbackIcon').style.display='flex';">
+    <div id="sidebarFallbackIcon" class="sidebar-logo-icon" style="display:none;">🎫</div>
     ICARE HELPDESK
   </div>
   <nav class="sidebar-nav">
