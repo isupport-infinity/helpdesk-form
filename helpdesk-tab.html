@@ -346,6 +346,82 @@ body {
   cursor: pointer; padding: 4px;
 }
 
+/* ===== NEW CASE FORM ===== */
+.form-field { margin-bottom: 16px; }
+.form-label {
+  display: block; font-size: 12px; font-weight: 600;
+  color: #374151; margin-bottom: 6px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.form-input, .form-select, .form-textarea {
+  width: 100%; padding: 10px 14px;
+  border: 1.5px solid #e5e7eb; border-radius: 8px;
+  font-size: 14px; color: #111827; outline: none;
+  transition: border 0.2s; background: #fff;
+  font-family: inherit;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: #4b3fce; }
+.form-select:disabled { background: #f3f4f6; color: #9ca3af; }
+.form-textarea { resize: vertical; min-height: 80px; }
+.form-row { display: flex; gap: 8px; align-items: flex-start; }
+.form-row .form-input, .form-row .form-textarea { flex: 1; }
+.mic-btn {
+  width: 42px; height: 42px; border-radius: 50%;
+  border: 1.5px solid #e5e7eb; background: #fff;
+  cursor: pointer; font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all 0.15s;
+}
+.mic-btn.recording { background: #fee2e2; border-color: #ef4444; animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+.sev-group { display: flex; gap: 8px; }
+.sev-btn {
+  flex: 1; padding: 10px 4px; border-radius: 8px;
+  border: 1.5px solid #e5e7eb; background: #fff;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  text-align: center; transition: all 0.15s; color: #6b7280;
+}
+.sev-btn[data-val="Low"].active    { background:#dcfce7; border-color:#16a34a; color:#16a34a; }
+.sev-btn[data-val="Medium"].active { background:#fef9c3; border-color:#ca8a04; color:#ca8a04; }
+.sev-btn[data-val="High"].active   { background:#ffedd5; border-color:#ea580c; color:#ea580c; }
+.sev-btn[data-val="Critical"].active { background:#fee2e2; border-color:#dc2626; color:#dc2626; }
+.tpl-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.tpl-chip {
+  background: #ede9ff; color: #4b3fce;
+  border: 1.5px solid #c4b5fd; border-radius: 20px;
+  padding: 5px 12px; font-size: 12px; cursor: pointer; transition: all 0.15s;
+}
+.tpl-chip:hover { background: #4b3fce; color: #fff; }
+.submit-btn {
+  width: 100%; padding: 14px;
+  background: #2d2a6e; color: #fff; border: none;
+  border-radius: 10px; font-size: 15px; font-weight: 700;
+  cursor: pointer; margin-top: 8px; transition: background 0.2s;
+  font-family: inherit;
+}
+.submit-btn:hover { background: #3d38a0; }
+.submit-btn:disabled { background: #9ca3af; cursor: not-allowed; }
+.nc-success {
+  display: none; text-align: center; padding: 48px 24px;
+}
+.nc-success-icon { font-size: 56px; margin-bottom: 16px; }
+.nc-caseid-box {
+  background: #ede9ff; border: 2px solid #4b3fce;
+  border-radius: 12px; padding: 16px; margin: 16px 0;
+}
+.nc-caseid-box .lbl { font-size: 12px; color: #6b7280; margin-bottom: 4px; }
+.nc-caseid-box .val { font-size: 28px; font-weight: 800; color: #4b3fce; }
+.ac-wrap { position: relative; }
+.ac-list {
+  position: absolute; top: 100%; left: 0; right: 0;
+  background: #fff; border: 1.5px solid #e5e7eb;
+  border-top: none; border-radius: 0 0 8px 8px;
+  max-height: 200px; overflow-y: auto; z-index: 200; display: none;
+}
+.ac-list div { padding: 10px 14px; font-size: 14px; cursor: pointer; color: #111827; }
+.ac-list div:hover { background: #f0f4f8; }
+.form-divider { border: none; border-top: 1px dashed #e5e7eb; margin: 4px 0 16px; }
+
 /* ===== FAB ===== */
 .fab {
   position: fixed;
@@ -448,6 +524,92 @@ body {
         <div id="activeCases"></div>
         <div class="section-label" style="margin-top:22px;" id="closedSectionLabel">ปิดล่าสุด</div>
         <div id="completedCases"></div>
+      </div>
+
+      <!-- New Case View -->
+      <div id="newCaseView" style="display:none;">
+        <!-- Form -->
+        <div id="ncFormBody">
+          <!-- Customer -->
+          <div class="form-field">
+            <label class="form-label">🏢 ชื่อลูกค้า / บริษัท</label>
+            <div class="ac-wrap">
+              <input type="text" class="form-input" id="ncCustomerInput" placeholder="พิมพ์ชื่อลูกค้า..." autocomplete="off"/>
+              <div class="ac-list" id="ncAcList"></div>
+              <input type="hidden" id="ncCustomerValue"/>
+            </div>
+          </div>
+          <!-- PO -->
+          <div class="form-field">
+            <label class="form-label">📄 PO Number</label>
+            <select class="form-select" id="ncPoSelect" onchange="ncOnPOChange()" disabled>
+              <option value="">-- เลือกลูกค้าก่อน --</option>
+            </select>
+          </div>
+          <!-- Contact -->
+          <div class="form-field">
+            <label class="form-label">👥 ผู้แจ้ง (Sender)</label>
+            <select class="form-select" id="ncContactSelect" onchange="ncOnContactChange()" disabled>
+              <option value="">-- เลือกลูกค้าก่อน --</option>
+            </select>
+          </div>
+          <hr class="form-divider"/>
+          <!-- Product -->
+          <div class="form-field">
+            <label class="form-label">📦 Product</label>
+            <select class="form-select" id="ncProductSelect">
+              <option value="">-- เลือก Product --</option>
+            </select>
+          </div>
+          <!-- Quick Templates -->
+          <div class="form-field">
+            <label class="form-label">⚡ Quick Templates</label>
+            <div class="tpl-chips">
+              <span class="tpl-chip" onclick="ncSetTemplate('Product Status Down')">Product Status Down</span>
+              <span class="tpl-chip" onclick="ncSetTemplate('Cannot Backup Data as usual')">Cannot Backup Data</span>
+              <span class="tpl-chip" onclick="ncSetTemplate('User Password Expired')">Password Expired</span>
+              <span class="tpl-chip" onclick="ncSetTemplate('Certificate has expired')">Certificate Expired</span>
+            </div>
+          </div>
+          <!-- Case Title -->
+          <div class="form-field">
+            <label class="form-label">📋 หัวข้อปัญหา</label>
+            <div class="form-row">
+              <input type="text" class="form-input" id="ncCaseTitle" placeholder="สรุปปัญหาสั้นๆ..."/>
+              <button class="mic-btn" id="ncMicBtn" onclick="ncToggleSpeech('title')" title="พิมพ์ด้วยเสียง">🎤</button>
+            </div>
+          </div>
+          <!-- Case Detail -->
+          <div class="form-field">
+            <label class="form-label">📝 รายละเอียดเพิ่มเติม</label>
+            <div class="form-row">
+              <textarea class="form-textarea" id="ncCaseDetail" placeholder="รายละเอียดเพิ่มเติม..." style="flex:1;"></textarea>
+              <button class="mic-btn" id="ncMicBtnDetail" onclick="ncToggleSpeech('detail')" title="พิมพ์ด้วยเสียง">🎤</button>
+            </div>
+          </div>
+          <!-- Severity -->
+          <div class="form-field">
+            <label class="form-label">🔥 Severity</label>
+            <div class="sev-group">
+              <button class="sev-btn" data-val="Low" onclick="ncSetSeverity('Low')">🟢 Low</button>
+              <button class="sev-btn" data-val="Medium" onclick="ncSetSeverity('Medium')">🟡 Medium</button>
+              <button class="sev-btn" data-val="High" onclick="ncSetSeverity('High')">🟠 High</button>
+              <button class="sev-btn" data-val="Critical" onclick="ncSetSeverity('Critical')">🔴 Critical</button>
+            </div>
+          </div>
+          <button class="submit-btn" id="ncSubmitBtn" onclick="ncSubmitCase()">🎫 บันทึกเคส</button>
+        </div>
+        <!-- Success Screen -->
+        <div class="nc-success" id="ncSuccess">
+          <div class="nc-success-icon">✅</div>
+          <h2 style="font-size:20px;font-weight:700;color:#1a1a2e;margin-bottom:8px;">เปิดเคสสำเร็จ!</h2>
+          <div class="nc-caseid-box">
+            <div class="lbl">Case ID</div>
+            <div class="val" id="ncResultCaseId">—</div>
+          </div>
+          <div style="font-size:13px;color:#6b7280;line-height:1.6;" id="ncResultDetail"></div>
+          <button class="submit-btn" style="margin-top:24px;" onclick="ncResetAndGoHome()">กลับหน้าหลัก</button>
+        </div>
       </div>
 
       <!-- History View -->
@@ -736,16 +898,19 @@ function emptyState(msg) {
 // ===== VIEW SWITCH =====
 function switchView(view) {
   currentView = view;
-  document.getElementById('myCasesView').style.display = view === 'myCases' ? 'block' : 'none';
+  document.getElementById('myCasesView').style.display  = view === 'myCases'  ? 'block' : 'none';
+  document.getElementById('newCaseView').style.display  = view === 'newCase'  ? 'block' : 'none';
   document.getElementById('historyView').style.display  = view === 'history'  ? 'block' : 'none';
-  document.getElementById('pageTitle').textContent =
-    view === 'myCases' ? 'เคสของฉัน' : 'ประวัติเคส';
+  const titles = { myCases: 'เคสของฉัน', newCase: 'เปิดเคสใหม่', history: 'ประวัติเคส' };
+  document.getElementById('pageTitle').textContent = titles[view] || '';
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  document.getElementById(view === 'myCases' ? 'navMyCases' : 'navHistory').classList.add('active');
+  const navMap = { myCases: 'navMyCases', newCase: 'navNewCase', history: 'navHistory' };
+  if (navMap[view]) document.getElementById(navMap[view]).classList.add('active');
 }
 
 function openNewCase() {
-  window.open(NEW_CASE_URL, '_blank');
+  switchView('newCase');
+  if (!ncDataLoaded) ncLoadInitialData();
 }
 
 // ===== MODAL =====
@@ -848,6 +1013,185 @@ function formatUpdateLog(raw) {
     .map(e => e.trim())
     .filter(Boolean);
   return entries.join('\n\n─────────────────────\n\n');
+}
+
+// ===== NEW CASE FORM =====
+const GET_CUSTOMERS_URL = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/47424e018b844768a24d414d7048c9b0/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=FcrNMg3nPeMtX67OPxS2chrO9fXabbx5XfGotWFVF3s';
+const GET_PRODUCTS_URL  = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/b703a8fc164e456fa7b94adc43b90702/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=TBkId07JFhoGeYkt2vhMAf7yoT9b2kWoo5qoxBcNDlw';
+const GET_PO_URL        = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/dcebd4805f854ba0993c64f64bd4c73e/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=hI2vawIJ7N3g1tyNhbPvHaLMTGlqwqEerAZQtJBRSA4';
+const GET_CONTACTS_URL  = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/ccdec52b30a0434cb419bbbf22ab7d29/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=PtHbnOYBCXY5H9ZvB1sypv-L7bAZML6XLlpcRDpAb94';
+const CREATE_CASE_URL   = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/8afd8b0926294e34b064abb2227dbef3/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=necY1Q4WuwGeqj8hBlBS39VPsSijTo7DPlWxt6tGyaU';
+
+let ncCustomers = [], ncContacts = [], ncDataLoaded = false;
+let ncSelectedSeverity = '', ncSelectedPO = '', ncSelectedContact = { name:'', email:'' };
+let ncRecognition = null, ncIsRecording = false, ncActiveField = null;
+
+async function ncLoadInitialData() {
+  ncDataLoaded = true;
+  try {
+    const [custRes, prodRes] = await Promise.all([
+      fetch(GET_CUSTOMERS_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' }),
+      fetch(GET_PRODUCTS_URL,  { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' })
+    ]);
+    const custData = await custRes.json();
+    const prodData = await prodRes.json();
+    ncCustomers = Array.isArray(custData) ? custData : (custData.value || []);
+    const products = Array.isArray(prodData) ? prodData : (prodData.value || []);
+    const sel = document.getElementById('ncProductSelect');
+    sel.innerHTML = '<option value="">-- เลือก Product --</option>';
+    products.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.product || ''; opt.textContent = p.product || '';
+      sel.appendChild(opt);
+    });
+  } catch(e) {}
+
+  // Setup autocomplete
+  const input = document.getElementById('ncCustomerInput');
+  const list  = document.getElementById('ncAcList');
+  input.addEventListener('input', () => {
+    const q = input.value.toLowerCase();
+    list.innerHTML = '';
+    if (!q) { list.style.display = 'none'; return; }
+    const matches = ncCustomers.filter(c => c.name && c.name.toLowerCase().includes(q));
+    if (!matches.length) { list.style.display = 'none'; return; }
+    matches.forEach(c => {
+      const div = document.createElement('div');
+      div.textContent = c.name;
+      div.onclick = () => {
+        input.value = c.name;
+        const short = c.short || c.name;
+        document.getElementById('ncCustomerValue').value = short;
+        list.style.display = 'none';
+        ncSelectedPO = ''; ncSelectedContact = { name:'', email:'' };
+        ncLoadPO(short); ncLoadContacts(short);
+      };
+      list.appendChild(div);
+    });
+    list.style.display = 'block';
+  });
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.ac-wrap')) list.style.display = 'none';
+  });
+}
+
+async function ncLoadPO(customerShortName) {
+  const sel = document.getElementById('ncPoSelect');
+  sel.innerHTML = '<option value="">-- กำลังโหลด... --</option>'; sel.disabled = true;
+  try {
+    const res = await fetch(GET_PO_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ customerShortName }) });
+    const data = await res.json();
+    const raw = Array.isArray(data) ? data : (data.value || []);
+    const poMap = {};
+    raw.forEach(p => { if (!poMap[p.poNumber] || p.endDate > poMap[p.poNumber].endDate) poMap[p.poNumber] = p; });
+    const pos = Object.values(poMap).sort((a,b) => (a.poCustomer||'').localeCompare(b.poCustomer||''));
+    sel.innerHTML = '<option value="">-- เลือก PO --</option>';
+    pos.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.poNumber || '';
+      opt.textContent = `${p.poCustomer||''} - ${p.poNumber||''} - ${p.poDescription||''}`;
+      sel.appendChild(opt);
+    });
+    sel.disabled = false;
+  } catch(e) { sel.innerHTML = '<option value="">-- โหลดไม่สำเร็จ --</option>'; sel.disabled = false; }
+}
+
+async function ncLoadContacts(customerShortName) {
+  const sel = document.getElementById('ncContactSelect');
+  sel.innerHTML = '<option value="">-- กำลังโหลด... --</option>'; sel.disabled = true;
+  try {
+    const res = await fetch(GET_CONTACTS_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ customerShortName }) });
+    const data = await res.json();
+    const all = Array.isArray(data) ? data : (data.value || []);
+    ncContacts = all.filter(c => (c['companyShortName'] || c['companyShortName ']).trim() === customerShortName);
+    sel.innerHTML = '<option value="">-- เลือกผู้แจ้ง --</option>';
+    ncContacts.forEach((c, i) => {
+      const opt = document.createElement('option'); opt.value = i; opt.textContent = c.contactName || ''; sel.appendChild(opt);
+    });
+    sel.disabled = false;
+  } catch(e) { sel.innerHTML = '<option value="">-- โหลดไม่สำเร็จ --</option>'; sel.disabled = false; }
+}
+
+function ncOnPOChange() { ncSelectedPO = document.getElementById('ncPoSelect').value; }
+function ncOnContactChange() {
+  const idx = parseInt(document.getElementById('ncContactSelect').value);
+  ncSelectedContact = (!isNaN(idx) && ncContacts[idx])
+    ? { name: ncContacts[idx].contactName || '', email: ncContacts[idx].email || '' }
+    : { name:'', email:'' };
+}
+function ncSetTemplate(text) { document.getElementById('ncCaseTitle').value = text; }
+function ncSetSeverity(val) {
+  ncSelectedSeverity = val;
+  document.querySelectorAll('.sev-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.sev-btn[data-val="${val}"]`).classList.add('active');
+}
+function ncToggleSpeech(field) {
+  if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) { alert('Browser ไม่รองรับ Speech-to-Text'); return; }
+  const targetId = field === 'detail' ? 'ncCaseDetail' : 'ncCaseTitle';
+  const micId    = field === 'detail' ? 'ncMicBtnDetail' : 'ncMicBtn';
+  if (ncIsRecording && ncActiveField === field) { ncRecognition.stop(); return; }
+  if (ncIsRecording) ncRecognition.stop();
+  ncActiveField = field;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  ncRecognition = new SR(); ncRecognition.lang = 'th-TH'; ncRecognition.interimResults = false;
+  ncRecognition.onstart = () => { ncIsRecording = true; document.getElementById(micId).classList.add('recording'); document.getElementById(micId).textContent = '⏹'; };
+  ncRecognition.onresult = e => { const el = document.getElementById(targetId); el.value = (el.value ? el.value + ' ' : '') + e.results[0][0].transcript; };
+  ncRecognition.onend = () => { ncIsRecording = false; ncActiveField = null; document.getElementById(micId).classList.remove('recording'); document.getElementById(micId).textContent = '🎤'; };
+  ncRecognition.start();
+}
+
+async function ncSubmitCase() {
+  const customer = document.getElementById('ncCustomerValue').value || document.getElementById('ncCustomerInput').value;
+  const title    = document.getElementById('ncCaseTitle').value.trim();
+  const detail   = document.getElementById('ncCaseDetail').value.trim();
+  const product  = document.getElementById('ncProductSelect').value;
+  if (!customer)           { alert('กรุณาเลือกชื่อลูกค้า'); return; }
+  if (!title)              { alert('กรุณาใส่หัวข้อปัญหา'); return; }
+  if (!ncSelectedSeverity) { alert('กรุณาเลือก Severity'); return; }
+  const btn = document.getElementById('ncSubmitBtn');
+  btn.disabled = true; btn.textContent = '⏳ กำลังบันทึก...';
+  try {
+    const res = await fetch(CREATE_CASE_URL, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        customerShortName: customer, caseTitle: title,
+        severity: ncSelectedSeverity,
+        engineerEmail: engineerEmail, engineerName: engineerName,
+        detail, poNumber: ncSelectedPO, product,
+        senderName: ncSelectedContact.name, senderEmail: ncSelectedContact.email
+      })
+    });
+    const data = await res.json();
+    document.getElementById('ncResultCaseId').textContent = data.caseId || 'N/A';
+    document.getElementById('ncResultDetail').innerHTML =
+      `<b>${customer}</b><br>${title}<br>Severity: ${ncSelectedSeverity}` +
+      (ncSelectedContact.name ? `<br>ผู้แจ้ง: ${ncSelectedContact.name}` : '');
+    document.getElementById('ncFormBody').style.display = 'none';
+    document.getElementById('ncSuccess').style.display = 'block';
+  } catch(e) {
+    alert('เกิดข้อผิดพลาด กรุณาลองใหม่');
+    btn.disabled = false; btn.textContent = '🎫 บันทึกเคส';
+  }
+}
+
+function ncResetAndGoHome() {
+  document.getElementById('ncCustomerInput').value = '';
+  document.getElementById('ncCustomerValue').value = '';
+  document.getElementById('ncCaseTitle').value = '';
+  document.getElementById('ncCaseDetail').value = '';
+  document.getElementById('ncPoSelect').innerHTML = '<option value="">-- เลือกลูกค้าก่อน --</option>';
+  document.getElementById('ncPoSelect').disabled = true;
+  document.getElementById('ncContactSelect').innerHTML = '<option value="">-- เลือกลูกค้าก่อน --</option>';
+  document.getElementById('ncContactSelect').disabled = true;
+  document.getElementById('ncProductSelect').selectedIndex = 0;
+  document.querySelectorAll('.sev-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('ncSubmitBtn').disabled = false;
+  document.getElementById('ncSubmitBtn').textContent = '🎫 บันทึกเคส';
+  document.getElementById('ncSuccess').style.display = 'none';
+  document.getElementById('ncFormBody').style.display = 'block';
+  ncSelectedSeverity = ''; ncSelectedPO = ''; ncSelectedContact = { name:'', email:'' };
+  switchView('myCases');
+  loadMyCases();
 }
 
 // ===== START =====
