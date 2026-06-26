@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>iCare Helpdesk</title>
 <script src="https://unpkg.com/@microsoft/teams-js@2.19.0/dist/MicrosoftTeams.min.js"></script>
-<script src="https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@2.38.3/dist/msal-browser.min.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -499,8 +499,8 @@ const msalConfig = {
   },
   cache: { cacheLocation: 'sessionStorage' }
 };
-const msalInstance = new msal.PublicClientApplication(msalConfig);
 const loginRequest = { scopes: ['User.Read'] };
+let msalInstance = null; // สร้างเฉพาะ browser mode
 
 // ===== CONFIG =====
 const GET_ENGINEERS_URL = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/c26384e3309847528b6b9c428399f777/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=u1CdrG01HdR3M0yyiZTlHzvJgrf3hvOV85oXJNqqVRg';
@@ -572,6 +572,7 @@ async function init() {
   }
 
   // Browser mode → ใช้ MSAL
+  msalInstance = new msal.PublicClientApplication(msalConfig);
   await msalInstance.handleRedirectPromise();
   const accounts = msalInstance.getAllAccounts();
   if (accounts.length === 0) {
