@@ -553,10 +553,7 @@ function statusBadge(status) {
 
 // ===== INIT =====
 async function init() {
-  // Handle MSAL redirect response ก่อนเสมอ
-  await msalInstance.handleRedirectPromise();
-
-  // Try Teams SDK ก่อน (timeout 2 วิ ถ้าไม่ใช่ Teams)
+  // 1. ลอง Teams SDK ก่อน (timeout 2 วิ)
   try {
     await Promise.race([
       microsoftTeams.app.initialize(),
@@ -567,18 +564,16 @@ async function init() {
     engineerName  = ctx.user?.displayName || engineerEmail.split('@')[0] || 'Engineer';
     setUserBadge(engineerName);
     await loadMyCases();
-    return;
+    return; // อยู่ใน Teams → จบ
   } catch(e) {}
 
-  // Fallback: MSAL authentication
+  // 2. Browser mode → ใช้ MSAL
+  await msalInstance.handleRedirectPromise();
   const accounts = msalInstance.getAllAccounts();
   if (accounts.length === 0) {
-    // ยังไม่ได้ login → redirect ไป Microsoft login
     await msalInstance.loginRedirect(loginRequest);
     return;
   }
-
-  // Login แล้ว → ดึงข้อมูล user
   const account = accounts[0];
   engineerEmail = account.username;
   engineerName  = account.name || engineerEmail.split('@')[0] || 'Engineer';
