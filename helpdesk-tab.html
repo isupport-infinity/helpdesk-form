@@ -624,7 +624,13 @@ async function loadMyCases() {
 // ===== RENDER =====
 function renderCases() {
   const active    = allCases.filter(c => c.status !== 'Completed');
-  const completed = allCases.filter(c => c.status === 'Completed');
+  const completed = allCases.filter(c => c.status === 'Completed')
+    .sort((a, b) => {
+      const tA = a.closedTime ? new Date(a.closedTime).getTime() : 0;
+      const tB = b.closedTime ? new Date(b.closedTime).getTime() : 0;
+      if (tB !== tA) return tB - tA;
+      return (b.caseId || '').localeCompare(a.caseId || '');
+    });
 
   document.getElementById('activeSectionLabel').textContent  = `เปิดอยู่ (${active.length})`;
   document.getElementById('closedSectionLabel').textContent  = `ปิดล่าสุด (${Math.min(completed.length,5)})`;
