@@ -787,6 +787,13 @@ body {
       </svg>
       ประวัติเคส
     </div>
+    <div class="nav-item" id="navSearch" onclick="switchView('search')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      ค้นหาเคส
+    </div>
   </nav>
   <div class="sidebar-bottom">
     <div class="sidebar-avatar" id="sidebarAvatar">--</div>
@@ -1039,6 +1046,76 @@ body {
         <div class="section-label" id="historySectionLabel">ประวัติเคสทั้งหมด</div>
         <div id="historyCases"></div>
       </div>
+
+      <!-- Search View -->
+      <div id="searchView" style="display:none; padding: 20px 22px;">
+
+        <!-- Search bar -->
+        <div style="display:flex; gap:10px; margin-bottom:12px;">
+          <div style="flex:1; position:relative;">
+            <svg style="position:absolute;left:11px;top:50%;transform:translateY(-50%);pointer-events:none;" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input id="srchInput" type="text" placeholder="ค้นหาด้วย Case ID, ชื่อเคส, ลูกค้า, Engineer…"
+              oninput="srchRun()"
+              style="width:100%;height:38px;border:1.5px solid #e5e7eb;border-radius:8px;padding:0 12px 0 36px;font-size:13px;color:#111827;background:#fff;outline:none;box-sizing:border-box;font-family:inherit;"
+              onfocus="this.style.borderColor='#f97316'" onblur="this.style.borderColor='#e5e7eb'">
+          </div>
+          <button onclick="srchRun()"
+            style="height:38px;padding:0 20px;background:#f97316;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">
+            ค้นหา
+          </button>
+        </div>
+
+        <!-- Filters -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center;">
+          <select id="srchStatus" onchange="srchRun()" style="height:32px;border:1px solid #e5e7eb;border-radius:6px;padding:0 10px;font-size:12px;color:#374151;background:#fff;font-family:inherit;">
+            <option value="">สถานะทั้งหมด</option>
+            <option value="New">New</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Completed">Completed</option>
+          </select>
+          <select id="srchSeverity" onchange="srchRun()" style="height:32px;border:1px solid #e5e7eb;border-radius:6px;padding:0 10px;font-size:12px;color:#374151;background:#fff;font-family:inherit;">
+            <option value="">Severity ทั้งหมด</option>
+            <option value="Critical">Critical</option>
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </select>
+          <select id="srchCustomer" onchange="srchRun()" style="height:32px;border:1px solid #e5e7eb;border-radius:6px;padding:0 10px;font-size:12px;color:#374151;background:#fff;font-family:inherit;">
+            <option value="">ลูกค้าทั้งหมด</option>
+          </select>
+          <select id="srchEngineer" onchange="srchRun()" style="height:32px;border:1px solid #e5e7eb;border-radius:6px;padding:0 10px;font-size:12px;color:#374151;background:#fff;font-family:inherit;">
+            <option value="">Engineer ทั้งหมด</option>
+          </select>
+          <input id="srchFrom" type="date" onchange="srchRun()" style="height:32px;border:1px solid #e5e7eb;border-radius:6px;padding:0 8px;font-size:12px;color:#374151;background:#fff;font-family:inherit;">
+          <input id="srchTo" type="date" onchange="srchRun()" style="height:32px;border:1px solid #e5e7eb;border-radius:6px;padding:0 8px;font-size:12px;color:#374151;background:#fff;font-family:inherit;">
+          <button id="srchClearBtn" onclick="srchClear()" style="display:none;height:32px;padding:0 12px;background:none;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#6b7280;cursor:pointer;font-family:inherit;">✕ ล้าง</button>
+        </div>
+
+        <!-- Result count -->
+        <div id="srchResultLabel" style="font-size:12px;color:#6b7280;margin-bottom:10px;"></div>
+
+        <!-- Results table -->
+        <div style="border:0.5px solid #e5e7eb;border-radius:10px;overflow:hidden;">
+          <table style="width:100%;border-collapse:collapse;">
+            <thead>
+              <tr style="background:#1a1410;">
+                <th style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);padding:9px 12px;text-align:left;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;">Case ID</th>
+                <th style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);padding:9px 12px;text-align:left;letter-spacing:0.04em;text-transform:uppercase;">Case Title</th>
+                <th style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);padding:9px 12px;text-align:left;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;">Customer</th>
+                <th style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);padding:9px 12px;text-align:left;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;">Engineer</th>
+                <th style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);padding:9px 12px;text-align:left;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;">Status</th>
+                <th style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);padding:9px 12px;text-align:left;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;">Severity</th>
+                <th style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);padding:9px 12px;text-align:left;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;">Received</th>
+              </tr>
+            </thead>
+            <tbody id="srchResults"></tbody>
+          </table>
+          <div id="srchEmpty" style="display:none;text-align:center;padding:40px 0;color:#9ca3af;font-size:13px;">
+            ไม่พบเคสที่ตรงกับเงื่อนไข
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -1427,18 +1504,20 @@ function switchView(view) {
   document.getElementById('dashboardView').style.display = view === 'dashboard' ? 'block' : 'none';
   document.getElementById('myCasesView').style.display   = view === 'myCases'   ? 'block' : 'none';
   document.getElementById('historyView').style.display   = view === 'history'   ? 'block' : 'none';
+  document.getElementById('searchView').style.display    = view === 'search'    ? 'block' : 'none';
   document.getElementById('newCaseBtn').style.display    = view === 'dashboard' ? 'none'  : 'flex';
-  const titles = { dashboard: 'Dashboard', myCases: 'เคสของฉัน', history: 'ประวัติเคส' };
+  const titles = { dashboard: 'Dashboard', myCases: 'เคสของฉัน', history: 'ประวัติเคส', search: 'ค้นหาเคส' };
   document.getElementById('pageTitle').textContent = titles[view] || '';
   const icons = {
     dashboard: '<rect x="2" y="2" width="9" height="9" rx="1"/><rect x="13" y="2" width="9" height="9" rx="1"/><rect x="2" y="13" width="9" height="9" rx="1"/><rect x="13" y="13" width="9" height="9" rx="1"/>',
     myCases:   '<rect x="3" y="3" width="18" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="13" y2="16"/>',
-    history:   '<circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/>'
+    history:   '<circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/>',
+    search:    '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>'
   };
   const iconEl = document.getElementById('topbarIcon');
   if (iconEl && icons[view]) iconEl.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.5">${icons[view]}</svg>`;
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  const navMap = { dashboard: 'navDashboard', myCases: 'navMyCases', history: 'navHistory' };
+  const navMap = { dashboard: 'navDashboard', myCases: 'navMyCases', history: 'navHistory', search: 'navSearch' };
   if (navMap[view]) document.getElementById(navMap[view]).classList.add('active');
   // Mobile tab nav
   document.querySelectorAll('.mobile-tab').forEach(el => el.classList.remove('active'));
@@ -1446,6 +1525,110 @@ function switchView(view) {
   if (mTabMap[view]) document.getElementById(mTabMap[view]).classList.add('active');
   // โหลด cases เมื่อสลับมาหน้าที่ต้องใช้
   if ((view === 'myCases' || view === 'history') && allCases.length === 0) loadMyCases();
+  // เมื่อเข้า search view ให้ populate dropdowns แล้ว focus input
+  if (view === 'search') { srchPopulateDropdowns(); srchRun(); setTimeout(() => document.getElementById('srchInput')?.focus(), 100); }
+}
+
+// ===== SEARCH =====
+function srchPopulateDropdowns() {
+  const allData = [...(dbRawCases || []), ...(allCases || [])];
+  const customers = [...new Set(allData.map(c => c.customer).filter(Boolean))].sort();
+  const engineers = [...new Set(allData.map(c => c.engineer).filter(Boolean))].sort();
+  const custSel = document.getElementById('srchCustomer');
+  const engSel  = document.getElementById('srchEngineer');
+  const prevC = custSel.value, prevE = engSel.value;
+  custSel.innerHTML = '<option value="">ลูกค้าทั้งหมด</option>' + customers.map(c=>`<option value="${c}">${c}</option>`).join('');
+  engSel.innerHTML  = '<option value="">Engineer ทั้งหมด</option>' + engineers.map(e=>`<option value="${e}">${e}</option>`).join('');
+  custSel.value = prevC; engSel.value = prevE;
+}
+
+function srchHighlight(text, kw) {
+  if (!kw) return escHtml(text);
+  const escaped = escHtml(text);
+  const re = new RegExp('(' + kw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi');
+  return escaped.replace(re, '<mark style="background:#fef3c7;border-radius:2px;padding:0 1px;">$1</mark>');
+}
+
+function escHtml(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function srchRun() {
+  const kw    = (document.getElementById('srchInput').value || '').trim().toLowerCase();
+  const stVal = document.getElementById('srchStatus').value;
+  const svVal = document.getElementById('srchSeverity').value;
+  const cuVal = document.getElementById('srchCustomer').value;
+  const enVal = document.getElementById('srchEngineer').value;
+  const frVal = document.getElementById('srchFrom').value;
+  const toVal = document.getElementById('srchTo').value;
+
+  // แหล่งข้อมูล: รวม dashboard data + my cases
+  const pool = [...(dbRawCases || []), ...(allCases || [])];
+  const seen = new Set();
+  const uniq = pool.filter(c => { const id = c.caseId||Math.random(); if(seen.has(id)) return false; seen.add(id); return true; });
+
+  const results = uniq.filter(c => {
+    if (stVal && c.status !== stVal) return false;
+    if (svVal && c.severity !== svVal) return false;
+    if (cuVal && (c.customer||'') !== cuVal) return false;
+    if (enVal && (c.engineer||'') !== enVal) return false;
+    if (frVal && c.receivedTime && new Date(c.receivedTime) < new Date(frVal)) return false;
+    if (toVal && c.receivedTime && new Date(c.receivedTime) > new Date(toVal + 'T23:59:59')) return false;
+    if (kw) {
+      const haystack = [c.caseId, c.caseTitle, c.customer, c.engineer, c.status, c.severity, c.product].join(' ').toLowerCase();
+      if (!haystack.includes(kw)) return false;
+    }
+    return true;
+  });
+
+  // Result label
+  const hasFilter = !!(kw || stVal || svVal || cuVal || enVal || frVal || toVal);
+  document.getElementById('srchClearBtn').style.display = hasFilter ? 'inline-block' : 'none';
+  const label = document.getElementById('srchResultLabel');
+  if (!hasFilter) { label.textContent = `ข้อมูลทั้งหมด ${uniq.length} เคส`; }
+  else { label.innerHTML = `พบ <strong style="color:#111827;">${results.length}</strong> รายการ${kw ? ` จากคำค้นหา "<strong style="color:#f97316;">${escHtml(kw)}</strong>"` : ''}`; }
+
+  const statusStyle = s => {
+    const m = {Completed:['#d1fae5','#065f46'],'In Progress':['#fef3c7','#92400e'],New:['#e0e7ff','#3730a3']};
+    const [bg,fg] = m[s]||['#f3f4f6','#374151'];
+    return `background:${bg};color:${fg};`;
+  };
+  const sevStyle = s => {
+    const m = {Critical:['#fee2e2','#991b1b'],High:['#fff7ed','#c2410c'],Medium:['#eff6ff','#1d4ed8'],Low:['#f3f4f6','#6b7280']};
+    const [bg,fg] = m[s]||['#f3f4f6','#374151'];
+    return `background:${bg};color:${fg};`;
+  };
+  const fmtD = d => d ? new Date(d).toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'numeric'}) : '-';
+
+  const tbody = document.getElementById('srchResults');
+  const empty = document.getElementById('srchEmpty');
+  if (!results.length) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+  } else {
+    empty.style.display = 'none';
+    tbody.innerHTML = results.slice(0,100).map((c,i) => `
+      <tr style="cursor:pointer;${i%2===1?'background:#fafafa':''}" onmouseover="this.style.background='#fff7ed'" onmouseout="this.style.background='${i%2===1?'#fafafa':'#fff'}'" onclick='openModal(${JSON.stringify(c).replace(/'/g,"&#39;")})'>
+        <td style="font-size:12px;color:#6b7280;padding:9px 12px;white-space:nowrap;border-bottom:0.5px solid #f3f4f6;">${srchHighlight(c.caseId||'-', kw)}</td>
+        <td style="font-size:12px;color:#111827;padding:9px 12px;border-bottom:0.5px solid #f3f4f6;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escHtml(c.caseTitle||'')}">${srchHighlight(c.caseTitle||'-', kw)}</td>
+        <td style="font-size:12px;color:#6b7280;padding:9px 12px;white-space:nowrap;border-bottom:0.5px solid #f3f4f6;">${srchHighlight(c.customer||'-', kw)}</td>
+        <td style="font-size:12px;color:#6b7280;padding:9px 12px;white-space:nowrap;border-bottom:0.5px solid #f3f4f6;">${srchHighlight(c.engineer||'-', kw)}</td>
+        <td style="padding:9px 12px;white-space:nowrap;border-bottom:0.5px solid #f3f4f6;"><span style="padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;${statusStyle(c.status)}">${escHtml(c.status||'-')}</span></td>
+        <td style="padding:9px 12px;white-space:nowrap;border-bottom:0.5px solid #f3f4f6;"><span style="padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;${sevStyle(c.severity)}">${escHtml(c.severity||'-')}</span></td>
+        <td style="font-size:12px;color:#9ca3af;padding:9px 12px;white-space:nowrap;border-bottom:0.5px solid #f3f4f6;">${fmtD(c.receivedTime)}</td>
+      </tr>`).join('');
+  }
+}
+
+function srchClear() {
+  document.getElementById('srchInput').value = '';
+  document.getElementById('srchStatus').value = '';
+  document.getElementById('srchSeverity').value = '';
+  document.getElementById('srchCustomer').value = '';
+  document.getElementById('srchEngineer').value = '';
+  document.getElementById('srchFrom').value = '';
+  document.getElementById('srchTo').value = '';
+  srchRun();
 }
 
 function openNewCase() {
