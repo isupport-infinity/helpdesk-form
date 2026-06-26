@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>iCare Helpdesk</title>
 <script src="https://unpkg.com/@microsoft/teams-js@2.19.0/dist/MicrosoftTeams.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@2.38.3/dist/msal-browser.min.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -490,17 +489,41 @@ body {
 </div>
 
 <script>
-// ===== MSAL CONFIG =====
-const msalConfig = {
-  auth: {
-    clientId: '3b0a8034-7a51-46b9-8d96-7644035a0ae6',
-    authority: 'https://login.microsoftonline.com/1e85b452-905e-4ec2-805a-39cf81ea8d95',
-    redirectUri: 'https://isupport-infinity.github.io/helpdesk-form/helpdesk-tab.html'
-  },
-  cache: { cacheLocation: 'sessionStorage' }
+// ===== AUTH CONFIG (No library needed) =====
+const AUTH = {
+  clientId:    '3b0a8034-7a51-46b9-8d96-7644035a0ae6',
+  tenantId:    '1e85b452-905e-4ec2-805a-39cf81ea8d95',
+  redirectUri: 'https://isupport-infinity.github.io/helpdesk-form/helpdesk-tab.html'
 };
-const loginRequest = { scopes: ['User.Read'] };
-let msalInstance = null; // สร้างเฉพาะ browser mode
+
+function loginWithMicrosoft() {
+  const nonce = Math.random().toString(36).substring(2);
+  sessionStorage.setItem('auth_nonce', nonce);
+  window.location.href =
+    `https://login.microsoftonline.com/${AUTH.tenantId}/oauth2/v2.0/authorize`
+    + `?client_id=${AUTH.clientId}`
+    + `&response_type=id_token`
+    + `&redirect_uri=${encodeURIComponent(AUTH.redirectUri)}`
+    + `&scope=openid+profile+email`
+    + `&nonce=${nonce}`
+    + `&response_mode=fragment`;
+}
+
+function parseJwt(token) {
+  const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+  const json = decodeURIComponent(
+    atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')
+  );
+  return JSON.parse(json);
+}
+
+function getTokenFromHash() {
+  const params = new URLSearchParams(window.location.hash.substring(1));
+  const token = params.get('id_token');
+  if (!token) return null;
+  history.replaceState(null, null, window.location.pathname);
+  return parseJwt(token);
+}
 
 // ===== CONFIG =====
 const GET_ENGINEERS_URL = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/c26384e3309847528b6b9c428399f777/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=u1CdrG01HdR3M0yyiZTlHzvJgrf3hvOV85oXJNqqVRg';
@@ -571,19 +594,29 @@ async function init() {
     return;
   }
 
-  // Browser mode → ใช้ MSAL
-  msalInstance = new msal.PublicClientApplication(msalConfig);
-  await msalInstance.handleRedirectPromise();
-  const accounts = msalInstance.getAllAccounts();
-  if (accounts.length === 0) {
-    await msalInstance.loginRedirect(loginRequest);
+  // Browser mode → ใช้ Microsoft implicit flow
+  const claims = getTokenFromHash();
+  if (claims) {
+    // กลับมาจาก Microsoft login
+    engineerEmail = claims.preferred_username || claims.email || claims.upn || '';
+    engineerName  = claims.name || engineerEmail.split('@')[0] || 'Engineer';
+    sessionStorage.setItem('icare_claims', JSON.stringify({ email: engineerEmail, name: engineerName }));
+    setUserBadge(engineerName);
+    await loadMyCases();
     return;
   }
-  const account = accounts[0];
-  engineerEmail = account.username;
-  engineerName  = account.name || engineerEmail.split('@')[0] || 'Engineer';
-  setUserBadge(engineerName);
-  await loadMyCases();
+  const saved = sessionStorage.getItem('icare_claims');
+  if (saved) {
+    // มี session อยู่แล้ว
+    const u = JSON.parse(saved);
+    engineerEmail = u.email;
+    engineerName  = u.name;
+    setUserBadge(engineerName);
+    await loadMyCases();
+    return;
+  }
+  // ยังไม่ได้ login → redirect
+  loginWithMicrosoft();
 }
 
 function setUserBadge(name) {
