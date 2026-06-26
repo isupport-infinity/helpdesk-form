@@ -556,9 +556,12 @@ async function init() {
   // Handle MSAL redirect response ก่อนเสมอ
   await msalInstance.handleRedirectPromise();
 
-  // Try Teams SDK ก่อน
+  // Try Teams SDK ก่อน (timeout 2 วิ ถ้าไม่ใช่ Teams)
   try {
-    await microsoftTeams.app.initialize();
+    await Promise.race([
+      microsoftTeams.app.initialize(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2000))
+    ]);
     const ctx = await microsoftTeams.app.getContext();
     engineerEmail = ctx.user?.loginHint || ctx.user?.userPrincipalName || '';
     engineerName  = ctx.user?.displayName || engineerEmail.split('@')[0] || 'Engineer';
