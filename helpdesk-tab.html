@@ -2189,10 +2189,10 @@ function dbExportPDF() {
     <div class="header-top">
       <div>
         <div class="brand-row">
-          <div class="brand-box">INF</div>
+          <img src="logo.png" alt="Infinity Solution Service" style="height:32px;width:auto;object-fit:contain;flex-shrink:0;" onerror="this.style.display='none';document.getElementById('pdfLogoFallback').style.display='flex';">
+          <div id="pdfLogoFallback" style="display:none;width:30px;height:30px;background:#f97316;border-radius:6px;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#fff;letter-spacing:-0.5px;">INF</div>
           <div>
             <div class="brand-name">ICARE HELPDESK</div>
-            <div class="brand-sub">Infinity Solution Service</div>
           </div>
         </div>
         <div class="report-title">Helpdesk Performance<br>Report</div>
@@ -2267,7 +2267,7 @@ function dbExportPDF() {
 
   <!-- FOOTER -->
   <div class="footer">
-    <div class="footer-l">iCare Helpdesk &nbsp;·&nbsp; Infinity Solution Service &nbsp;·&nbsp; Confidential</div>
+    <div class="footer-l">iCare Helpdesk &nbsp;·&nbsp; Infinity Solution Service Co., Ltd. &nbsp;·&nbsp; Confidential</div>
     <div class="footer-r">Generated ${today}</div>
   </div>
 
