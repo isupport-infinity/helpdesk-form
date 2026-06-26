@@ -799,6 +799,15 @@ body {
             <div class="chart-wrap tall"><canvas id="chartEng"></canvas></div>
           </div>
         </div>
+
+        <div class="db-section-head"><h2>Product</h2></div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div><div class="chart-title">เคสตาม Product</div><div class="chart-desc">Top 10 สินค้าที่มีเคสสูงสุด</div></div>
+            <span class="chart-badge" id="badgeProd">—</span>
+          </div>
+          <div class="chart-wrap"><canvas id="chartProd"></canvas></div>
+        </div>
       </div>
 
       <!-- My Cases View -->
@@ -1586,19 +1595,22 @@ async function dbLoadData() {
 
 function dbRender(cases) {
   const total    = cases.length;
-  const byStatus = {};
-  const bySev    = {};
-  const byCust   = {};
-  const byEng    = {};
+  const byStatus  = {};
+  const bySev     = {};
+  const byCust    = {};
+  const byEng     = {};
+  const byProduct = {};
 
   cases.forEach(c => {
     const st  = c.status   || 'Unknown';
     const sv  = c.severity || 'Unknown';
     const cu  = c.customer || 'Unknown';
     const en  = c.engineer || 'Unassigned';
-    byStatus[st] = (byStatus[st] || 0) + 1;
-    bySev[sv]    = (bySev[sv]    || 0) + 1;
-    byCust[cu]   = (byCust[cu]   || 0) + 1;
+    const pr  = c.product  || 'ไม่ระบุ';
+    byStatus[st]   = (byStatus[st]   || 0) + 1;
+    bySev[sv]      = (bySev[sv]      || 0) + 1;
+    byCust[cu]     = (byCust[cu]     || 0) + 1;
+    byProduct[pr]  = (byProduct[pr]  || 0) + 1;
     if (!byEng[en]) byEng[en] = { New:0, 'In Progress':0, Completed:0 };
     byEng[en][st] = (byEng[en][st] || 0) + 1;
   });
@@ -1628,6 +1640,11 @@ function dbRender(cases) {
   const custSorted = Object.entries(byCust).sort((a,b) => b[1]-a[1]).slice(0,10);
   document.getElementById('badgeCust').textContent = Object.keys(byCust).length + ' ลูกค้า';
   dbBuildBarV('chartCust', custSorted.map(x=>x[0]), custSorted.map(x=>x[1]));
+
+  // Bar V — Top 10 Products
+  const prodSorted = Object.entries(byProduct).sort((a,b) => b[1]-a[1]).slice(0,10);
+  document.getElementById('badgeProd').textContent = Object.keys(byProduct).length + ' Product';
+  dbBuildBarV('chartProd', prodSorted.map(x=>x[0]), prodSorted.map(x=>x[1]));
 
   // Stacked — Engineer workload
   const engNames  = Object.keys(byEng).sort();
