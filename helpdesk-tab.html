@@ -547,6 +547,12 @@ body {
     <!-- Form -->
     <div id="ncFormBody">
       <div class="form-field">
+        <div class="modal-label">👤 Engineer Assigned</div>
+        <select class="modal-note" style="min-height:unset;margin-bottom:0;" id="ncEngineerSelect">
+          <option value="">-- กำลังโหลด... --</option>
+        </select>
+      </div>
+      <div class="form-field">
         <div class="modal-label">🏢 ลูกค้า</div>
         <div class="ac-wrap">
           <input type="text" class="modal-note" style="min-height:unset;margin-bottom:0;" id="ncCustomerInput" placeholder="พิมพ์ชื่อลูกค้า..." autocomplete="off"/>
@@ -1025,20 +1031,34 @@ let ncRecognition = null, ncIsRecording = false, ncActiveField = null;
 async function ncLoadInitialData() {
   ncDataLoaded = true;
   try {
-    const [custRes, prodRes] = await Promise.all([
+    const [custRes, prodRes, engRes] = await Promise.all([
       fetch(GET_CUSTOMERS_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' }),
-      fetch(GET_PRODUCTS_URL,  { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' })
+      fetch(GET_PRODUCTS_URL,  { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' }),
+      fetch(GET_ENGINEERS_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' })
     ]);
     const custData = await custRes.json();
     const prodData = await prodRes.json();
+    const engData  = await engRes.json();
     ncCustomers = Array.isArray(custData) ? custData : (custData.value || []);
-    const products = Array.isArray(prodData) ? prodData : (prodData.value || []);
-    const sel = document.getElementById('ncProductSelect');
-    sel.innerHTML = '<option value="">-- เลือก Product --</option>';
+    const products  = Array.isArray(prodData) ? prodData : (prodData.value || []);
+    const engineers = Array.isArray(engData)  ? engData  : (engData.value  || []);
+
+    const prodSel = document.getElementById('ncProductSelect');
+    prodSel.innerHTML = '<option value="">-- เลือก Product --</option>';
     products.forEach(p => {
       const opt = document.createElement('option');
       opt.value = p.product || ''; opt.textContent = p.product || '';
-      sel.appendChild(opt);
+      prodSel.appendChild(opt);
+    });
+
+    const engSel = document.getElementById('ncEngineerSelect');
+    engSel.innerHTML = '<option value="">-- เลือก Engineer --</option>';
+    engineers.forEach(e => {
+      const opt = document.createElement('option');
+      opt.value = e.email; opt.textContent = e.name;
+      opt.dataset.name = e.name;
+      if (e.email === engineerEmail) opt.selected = true;
+      engSel.appendChild(opt);
     });
   } catch(e) {}
 
@@ -1141,6 +1161,10 @@ async function ncSubmitCase() {
   const title    = document.getElementById('ncCaseTitle').value.trim();
   const detail   = document.getElementById('ncCaseDetail').value.trim();
   const product  = document.getElementById('ncProductSelect').value;
+  const engSel   = document.getElementById('ncEngineerSelect');
+  const selEngEmail = engSel.value;
+  const selEngName  = engSel.options[engSel.selectedIndex]?.dataset?.name || '';
+  if (!selEngEmail)        { alert('กรุณาเลือก Engineer'); return; }
   if (!customer)           { alert('กรุณาเลือกชื่อลูกค้า'); return; }
   if (!title)              { alert('กรุณาใส่หัวข้อปัญหา'); return; }
   if (!ncSelectedSeverity) { alert('กรุณาเลือก Severity'); return; }
@@ -1152,7 +1176,7 @@ async function ncSubmitCase() {
       body: JSON.stringify({
         customerShortName: customer, caseTitle: title,
         severity: ncSelectedSeverity,
-        engineerEmail: engineerEmail, engineerName: engineerName,
+        engineerEmail: selEngEmail, engineerName: selEngName,
         detail, poNumber: ncSelectedPO, product,
         senderName: ncSelectedContact.name, senderEmail: ncSelectedContact.email
       })
@@ -1180,6 +1204,7 @@ function ncResetAndGoHome() {
   document.getElementById('ncContactSelect').innerHTML = '<option value="">-- เลือกลูกค้าก่อน --</option>';
   document.getElementById('ncContactSelect').disabled = true;
   document.getElementById('ncProductSelect').selectedIndex = 0;
+  document.getElementById('ncEngineerSelect').value = engineerEmail;
   document.querySelectorAll('.sev-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('ncSubmitBtn').disabled = false;
   document.getElementById('ncSubmitBtn').textContent = '🎫 บันทึกเคส';
