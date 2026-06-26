@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>iCare Helpdesk</title>
 <script src="https://unpkg.com/@microsoft/teams-js@2.19.0/dist/MicrosoftTeams.min.js"></script>
+<script src="https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -489,6 +490,18 @@ body {
 </div>
 
 <script>
+// ===== MSAL CONFIG =====
+const msalConfig = {
+  auth: {
+    clientId: '3b0a8034-7a51-46b9-8d96-7644035a0ae6',
+    authority: 'https://login.microsoftonline.com/1e85b452-905e-4ec2-805a-39cf81ea8d95',
+    redirectUri: 'https://isupport-infinity.github.io/helpdesk-form/helpdesk-tab.html'
+  },
+  cache: { cacheLocation: 'sessionStorage' }
+};
+const msalInstance = new msal.PublicClientApplication(msalConfig);
+const loginRequest = { scopes: ['User.Read'] };
+
 // ===== CONFIG =====
 const GET_ENGINEERS_URL = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/c26384e3309847528b6b9c428399f777/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=u1CdrG01HdR3M0yyiZTlHzvJgrf3hvOV85oXJNqqVRg';
 const GET_MY_CASES_URL  = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/73cf4492b201433481de7312d475969e/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=AJcqDu8G6gIMvMzxrCZQ6SSLKmaj8iM04xQYY82pBsw';
@@ -540,6 +553,10 @@ function statusBadge(status) {
 
 // ===== INIT =====
 async function init() {
+  // Handle MSAL redirect response ก่อนเสมอ
+  await msalInstance.handleRedirectPromise();
+
+  // Try Teams SDK ก่อน
   try {
     await microsoftTeams.app.initialize();
     const ctx = await microsoftTeams.app.getContext();
@@ -547,9 +564,23 @@ async function init() {
     engineerName  = ctx.user?.displayName || engineerEmail.split('@')[0] || 'Engineer';
     setUserBadge(engineerName);
     await loadMyCases();
-  } catch(e) {
-    await loadEngineerSelector();
+    return;
+  } catch(e) {}
+
+  // Fallback: MSAL authentication
+  const accounts = msalInstance.getAllAccounts();
+  if (accounts.length === 0) {
+    // ยังไม่ได้ login → redirect ไป Microsoft login
+    await msalInstance.loginRedirect(loginRequest);
+    return;
   }
+
+  // Login แล้ว → ดึงข้อมูล user
+  const account = accounts[0];
+  engineerEmail = account.username;
+  engineerName  = account.name || engineerEmail.split('@')[0] || 'Engineer';
+  setUserBadge(engineerName);
+  await loadMyCases();
 }
 
 function setUserBadge(name) {
