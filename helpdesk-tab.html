@@ -2046,87 +2046,184 @@ function dbExportPDF() {
       <td style="font-size:9px;font-weight:700;color:#374151;padding:2px 0 2px 6px;width:24px;">${val}</td>
     </tr>`).join('');
 
+  const statusBadge = s => {
+    const map = { 'Completed':['#d1fae5','#065f46'], 'In Progress':['#fef3c7','#92400e'], 'New':['#e0e7ff','#3730a3'] };
+    const [bg, fg] = map[s] || ['#f3f4f6','#374151'];
+    return `<span class="badge" style="background:${bg};color:${fg};">${s||'-'}</span>`;
+  };
+  const sevBadge = s => {
+    const map = { 'Critical':['#fee2e2','#991b1b'], 'High':['#fff7ed','#c2410c'], 'Medium':['#eff6ff','#1d4ed8'], 'Low':['#f3f4f6','#6b7280'] };
+    const [bg, fg] = map[s] || ['#f3f4f6','#374151'];
+    return `<span class="badge" style="background:${bg};color:${fg};">${s||'-'}</span>`;
+  };
   const caseRows = rows.slice(0,30).map(c => `
-    <tr style="border-bottom:0.5px solid #f0f0f0;">
-      <td style="font-size:8px;color:#6b7280;padding:4px 6px;white-space:nowrap;">${c.caseId||'-'}</td>
-      <td style="font-size:8px;color:#111827;padding:4px 6px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.caseTitle||'-'}</td>
-      <td style="font-size:8px;color:#6b7280;padding:4px 6px;white-space:nowrap;">${c.customer||'-'}</td>
-      <td style="font-size:8px;color:#6b7280;padding:4px 6px;white-space:nowrap;">${c.engineer||'-'}</td>
-      <td style="font-size:8px;padding:4px 6px;white-space:nowrap;">
-        <span style="background:${c.status==='Completed'?'#d1fae5':c.status==='In Progress'?'#fef3c7':'#e0e7ff'};color:${c.status==='Completed'?'#065f46':c.status==='In Progress'?'#92400e':'#3730a3'};padding:1px 6px;border-radius:8px;font-size:7px;font-weight:700;">${c.status||'-'}</span>
-      </td>
-      <td style="font-size:8px;padding:4px 6px;white-space:nowrap;">
-        <span style="background:${c.severity==='Critical'?'#fee2e2':c.severity==='High'?'#fff7ed':'#f3f4f6'};color:${c.severity==='Critical'?'#991b1b':c.severity==='High'?'#c2410c':'#374151'};padding:1px 6px;border-radius:8px;font-size:7px;font-weight:700;">${c.severity||'-'}</span>
-      </td>
-      <td style="font-size:8px;color:#9ca3af;padding:4px 6px;white-space:nowrap;">${fmtDate(c.receivedTime)}</td>
+    <tr>
+      <td style="color:#6b7280;white-space:nowrap;">${c.caseId||'-'}</td>
+      <td style="color:#111827;">${c.caseTitle||'-'}</td>
+      <td style="color:#6b7280;white-space:nowrap;">${c.customer||'-'}</td>
+      <td style="color:#6b7280;white-space:nowrap;">${c.engineer||'-'}</td>
+      <td style="white-space:nowrap;">${statusBadge(c.status)}</td>
+      <td style="white-space:nowrap;">${sevBadge(c.severity)}</td>
+      <td style="color:#9ca3af;white-space:nowrap;">${fmtDate(c.receivedTime)}</td>
     </tr>`).join('');
 
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
 <title>iCare Helpdesk Report</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, 'Segoe UI', Arial, sans-serif; background: #fff; color: #111827; }
-  @page { size: A4 landscape; margin: 0; }
-  @media print {
-    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { font-family: -apple-system, 'Segoe UI', Arial, sans-serif; color: #111827; }
+  @page { size: A4 portrait; margin: 0; }
+
+  /* ── Screen: document-viewer look ── */
+  @media screen {
+    html { background: #6b7280; min-height: 100%; }
+    body { background: #6b7280; padding: 32px 0 48px; }
+    .page {
+      width: 210mm; min-height: 297mm;
+      margin: 0 auto;
+      background: #fff;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.35), 0 1px 4px rgba(0,0,0,0.2);
+    }
+    .print-hint {
+      text-align: center; color: rgba(255,255,255,0.6);
+      font-size: 11px; margin-bottom: 12px; font-family: -apple-system, sans-serif;
+    }
+    .print-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #f97316; color: #fff; border: none; border-radius: 6px;
+      padding: 7px 16px; font-size: 12px; font-weight: 600; cursor: pointer;
+      font-family: inherit; margin-bottom: 6px;
+    }
+    .print-btn:hover { background: #ea580c; }
   }
-  .page { width: 297mm; min-height: 210mm; padding: 0; }
-  .header { background: #1a1410; padding: 18px 24px 14px; }
+
+  /* ── Print: clean output ── */
+  @media print {
+    html, body { background: #fff; padding: 0; }
+    .page { width: 210mm; min-height: 297mm; box-shadow: none; margin: 0; }
+    .print-toolbar { display: none !important; }
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .no-break { page-break-inside: avoid; }
+  }
+
+  /* ── HEADER ── */
+  .header { background: #1a1410; padding: 20px 22px 16px; }
   .header-top { display: flex; justify-content: space-between; align-items: flex-start; }
-  .brand-row { display: flex; align-items: center; gap: 10px; }
-  .brand-box { width: 32px; height: 32px; background: #f97316; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: #fff; }
-  .brand-name { color: #fff; font-size: 12px; font-weight: 700; letter-spacing: 0.05em; }
-  .brand-sub { color: rgba(255,255,255,0.35); font-size: 9px; margin-top: 1px; }
-  .report-title { color: #fff; font-size: 18px; font-weight: 800; margin-top: 10px; }
-  .report-period { color: #f97316; font-size: 10px; font-weight: 600; margin-top: 4px; }
-  .meta { text-align: right; }
-  .meta-label { color: rgba(255,255,255,0.35); font-size: 8px; }
-  .meta-val { color: rgba(255,255,255,0.7); font-size: 9px; font-weight: 500; margin-top: 1px; }
-  .orange-bar { height: 3px; background: #f97316; }
-  .body { padding: 16px 24px; }
-  .kpi-row { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; margin-bottom: 14px; }
-  .kpi { background: #f9fafb; border-radius: 7px; padding: 10px 12px; border-left: 3px solid #f97316; }
-  .kpi-v { font-size: 24px; font-weight: 800; color: #1a1410; }
-  .kpi-l { font-size: 9px; color: #9ca3af; margin-top: 2px; }
-  .section-title { font-size: 9px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1.5px solid #f0f0f0; }
-  .charts-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
-  .chart-box { }
-  .bar-table { width: 100%; border-collapse: collapse; }
+  .brand-row { display: flex; align-items: center; gap: 9px; margin-bottom: 10px; }
+  .brand-box { width: 30px; height: 30px; background: #f97316; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+  .brand-name { color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; }
+  .brand-sub  { color: rgba(255,255,255,0.35); font-size: 8px; margin-top: 1px; }
+  .report-title  { color: #fff; font-size: 20px; font-weight: 800; line-height: 1.2; }
+  .report-period { color: #f97316; font-size: 9.5px; font-weight: 600; margin-top: 5px; }
+  .meta { text-align: right; min-width: 120px; }
+  .meta-label { color: rgba(255,255,255,0.35); font-size: 7.5px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .meta-val   { color: rgba(255,255,255,0.75); font-size: 9px; font-weight: 500; margin-top: 1px; margin-bottom: 7px; }
+  .meta-total { font-size: 22px; font-weight: 800; color: #f97316; line-height: 1; }
+  .orange-bar { height: 3px; background: linear-gradient(90deg, #f97316, #fb923c); }
+
+  /* ── BODY ── */
+  .body { padding: 16px 22px; }
+
+  /* KPI */
+  .kpi-row { display: grid; grid-template-columns: repeat(5,1fr); gap: 7px; margin-bottom: 16px; }
+  .kpi { background: #f9fafb; border-radius: 8px; padding: 10px 11px 9px; border-top: 3px solid #f97316; }
+  .kpi-v { font-size: 22px; font-weight: 800; color: #1a1410; line-height: 1.1; }
+  .kpi-l { font-size: 8px; color: #9ca3af; margin-top: 3px; font-weight: 500; }
+
+  /* Section title */
+  .section-title {
+    font-size: 8.5px; font-weight: 700; color: #6b7280;
+    text-transform: uppercase; letter-spacing: 0.09em;
+    margin-bottom: 8px; padding-bottom: 5px;
+    border-bottom: 1.5px solid #f0f0f0;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .section-title::before {
+    content: ''; display: inline-block;
+    width: 3px; height: 10px; background: #f97316; border-radius: 2px;
+  }
+
+  /* Charts 2-up */
+  .charts-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .chart-box { background: #fafafa; border: 0.5px solid #f0f0f0; border-radius: 8px; padding: 12px; }
+  .bar-table  { width: 100%; border-collapse: collapse; }
+  .bar-table td { vertical-align: middle; }
+
+  /* Severity row */
+  .sev-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 7px; margin-bottom: 16px; }
+  .sev-card { border-radius: 8px; padding: 10px 12px; }
+  .sev-card .sv { font-size: 18px; font-weight: 800; }
+  .sev-card .sl { font-size: 8px; font-weight: 500; margin-top: 2px; opacity: 0.7; }
+
+  /* Case table */
+  .case-wrap { background: #fff; border: 0.5px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
   .case-table { width: 100%; border-collapse: collapse; }
-  .case-table th { font-size: 8px; font-weight: 700; color: #fff; background: #1a1410; padding: 5px 6px; text-align: left; }
-  .footer { padding: 8px 24px; background: #f9fafb; border-top: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
-  .footer-left { font-size: 8px; color: #9ca3af; }
-  .footer-right { font-size: 8px; color: #9ca3af; }
+  .case-table thead tr { background: #1a1410; }
+  .case-table th { font-size: 7.5px; font-weight: 700; color: rgba(255,255,255,0.85);
+    padding: 6px 7px; text-align: left; letter-spacing: 0.04em; text-transform: uppercase; }
+  .case-table td { font-size: 8px; color: #374151; padding: 5px 7px; border-bottom: 0.5px solid #f5f5f5; vertical-align: middle; }
+  .case-table tr:last-child td { border-bottom: none; }
+  .case-table tr:nth-child(even) td { background: #fafafa; }
+  .badge { padding: 1px 6px; border-radius: 20px; font-size: 7px; font-weight: 700; display: inline-block; }
+
+  /* Footer */
+  .footer { padding: 9px 22px; background: #f9fafb; border-top: 1px solid #f0f0f0;
+    display: flex; justify-content: space-between; align-items: center; }
+  .footer-l { font-size: 7.5px; color: #b0b7c3; }
+  .footer-r { font-size: 7.5px; color: #b0b7c3; }
 </style>
 </head><body>
+<div class="print-toolbar" style="text-align:center;padding:0 0 14px;">
+  <div class="print-hint">Preview — A4 Portrait &nbsp;|&nbsp; คลิกปุ่มเพื่อ Save as PDF</div>
+  <button class="print-btn" onclick="window.print()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+    Save as PDF / Print
+  </button>
+</div>
 <div class="page">
+
+  <!-- HEADER -->
   <div class="header">
     <div class="header-top">
       <div>
         <div class="brand-row">
           <div class="brand-box">INF</div>
-          <div><div class="brand-name">ICARE HELPDESK</div><div class="brand-sub">Infinity Solution Service</div></div>
+          <div>
+            <div class="brand-name">ICARE HELPDESK</div>
+            <div class="brand-sub">Infinity Solution Service</div>
+          </div>
         </div>
-        <div class="report-title">Helpdesk Performance Report</div>
-        <div class="report-period">ช่วงเวลา: ${from} — ${to}${cust?' · ลูกค้า: '+cust:''}${eng?' · Engineer: '+eng:''}</div>
+        <div class="report-title">Helpdesk Performance<br>Report</div>
+        <div class="report-period">📅 ${from} — ${to}${cust?' &nbsp;·&nbsp; '+cust:''}${eng?' &nbsp;·&nbsp; '+eng:''}</div>
       </div>
       <div class="meta">
-        <div class="meta-label">Generated</div><div class="meta-val">${today}</div>
-        <div style="margin-top:8px;"><div class="meta-label">Prepared by</div><div class="meta-val">${engineerName||'iCare User'}</div></div>
-        <div style="margin-top:8px;"><div class="meta-label">Total Cases</div><div class="meta-val" style="font-size:14px;font-weight:800;color:#f97316;">${total}</div></div>
+        <div class="meta-label">Generated</div>
+        <div class="meta-val">${today}</div>
+        <div class="meta-label">Prepared by</div>
+        <div class="meta-val">${engineerName||'iCare User'}</div>
+        <div class="meta-label" style="margin-top:6px;">Total Cases</div>
+        <div class="meta-total">${total}</div>
       </div>
     </div>
   </div>
   <div class="orange-bar"></div>
+
+  <!-- BODY -->
   <div class="body">
-    <div class="kpi-row">
+
+    <!-- KPI -->
+    <div class="kpi-row no-break">
       <div class="kpi"><div class="kpi-v">${total}</div><div class="kpi-l">ทั้งหมด</div></div>
-      <div class="kpi" style="border-left-color:#4b3fce;"><div class="kpi-v" style="color:#4b3fce;">${nNew}</div><div class="kpi-l">New</div></div>
-      <div class="kpi" style="border-left-color:#f59e0b;"><div class="kpi-v" style="color:#f59e0b;">${nProg}</div><div class="kpi-l">In Progress</div></div>
-      <div class="kpi" style="border-left-color:#10b981;"><div class="kpi-v" style="color:#10b981;">${nDone}</div><div class="kpi-l">Completed</div></div>
-      <div class="kpi" style="border-left-color:#ef4444;"><div class="kpi-v" style="color:#ef4444;">${nCrit}</div><div class="kpi-l">Critical</div></div>
+      <div class="kpi" style="border-top-color:#4b3fce;"><div class="kpi-v" style="color:#4b3fce;">${nNew}</div><div class="kpi-l">New</div></div>
+      <div class="kpi" style="border-top-color:#f59e0b;"><div class="kpi-v" style="color:#f59e0b;">${nProg}</div><div class="kpi-l">In Progress</div></div>
+      <div class="kpi" style="border-top-color:#10b981;"><div class="kpi-v" style="color:#10b981;">${nDone}</div><div class="kpi-l">Completed</div></div>
+      <div class="kpi" style="border-top-color:#ef4444;"><div class="kpi-v" style="color:#ef4444;">${nCrit}</div><div class="kpi-l">Critical</div></div>
     </div>
-    <div class="charts-row">
+
+    <!-- Charts 2 col -->
+    <div class="charts-2col no-break">
       <div class="chart-box">
         <div class="section-title">Workload by Engineer</div>
         <table class="bar-table">${barRows(topEng, maxEng, '#f97316')}</table>
@@ -2135,34 +2232,50 @@ function dbExportPDF() {
         <div class="section-title">Top Customers</div>
         <table class="bar-table">${barRows(topCust, maxCust, '#4b3fce')}</table>
       </div>
-      <div class="chart-box">
-        <div class="section-title">By Severity</div>
-        <table class="bar-table">${sevRows.map(s => `
-          <tr>
-            <td style="font-size:9px;color:#6b7280;text-align:right;padding:2px 6px 2px 0;width:110px;">${s}</td>
-            <td style="padding:2px 0;"><div style="background:#f3f4f6;border-radius:3px;height:10px;width:100%;overflow:hidden;"><div style="background:${sevColor[s]||'#6b7280'};height:10px;width:${Math.round(bySev[s]/maxSev*100)}%;border-radius:3px;"></div></div></td>
-            <td style="font-size:9px;font-weight:700;color:#374151;padding:2px 0 2px 6px;width:24px;">${bySev[s]}</td>
-          </tr>`).join('')}
-        </table>
-      </div>
     </div>
-    <div class="section-title">Case List ${rows.length > 30 ? '(แสดง 30 รายการแรก จากทั้งหมด '+rows.length+')' : '('+rows.length+' รายการ)'}</div>
-    <table class="case-table">
-      <thead><tr>
-        <th>Case ID</th><th>Case Title</th><th>Customer</th><th>Engineer</th><th>Status</th><th>Severity</th><th>Received</th>
-      </tr></thead>
-      <tbody>${caseRows}</tbody>
-    </table>
+
+    <!-- Severity Cards -->
+    <div class="section-title" style="margin-bottom:10px;">By Severity</div>
+    <div class="sev-row no-break" style="margin-bottom:16px;">
+      ${['Critical','High','Medium','Low'].map(s => {
+        const colors = {Critical:['#fee2e2','#ef4444'],High:['#fff7ed','#f59e0b'],Medium:['#eff6ff','#3b82f6'],Low:['#f9fafb','#6b7280']};
+        const [bg, fg] = colors[s] || ['#f9fafb','#6b7280'];
+        return `<div class="sev-card" style="background:${bg};border-top:3px solid ${fg};">
+          <div class="sv" style="color:${fg};">${bySev[s]||0}</div>
+          <div class="sl" style="color:${fg};">${s}</div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <!-- Case Table -->
+    <div class="section-title" style="margin-bottom:10px;">
+      Case List
+      <span style="font-size:8px;color:#9ca3af;font-weight:400;letter-spacing:0;text-transform:none;">
+        ${rows.length > 30 ? '(แสดง 30 / '+rows.length+' รายการ)' : '('+rows.length+' รายการ)'}
+      </span>
+    </div>
+    <div class="case-wrap no-break">
+      <table class="case-table">
+        <thead><tr>
+          <th>Case ID</th><th style="min-width:130px;">Case Title</th><th>Customer</th>
+          <th>Engineer</th><th>Status</th><th>Severity</th><th>Received</th>
+        </tr></thead>
+        <tbody>${caseRows}</tbody>
+      </table>
+    </div>
   </div>
+
+  <!-- FOOTER -->
   <div class="footer">
-    <div class="footer-left">iCare Helpdesk · Infinity Solution Service · Confidential</div>
-    <div class="footer-right">Generated ${today}</div>
+    <div class="footer-l">iCare Helpdesk &nbsp;·&nbsp; Infinity Solution Service &nbsp;·&nbsp; Confidential</div>
+    <div class="footer-r">Generated ${today}</div>
   </div>
+
 </div>
-<script>window.onload = () => { window.print(); }<\/script>
+<script>/* print triggered manually via toolbar button */<\/script>
 </body></html>`;
 
-  const w = window.open('', '_blank', 'width=1200,height=800');
+  const w = window.open('', '_blank', 'width=900,height=1000');
   w.document.write(html);
   w.document.close();
 }
