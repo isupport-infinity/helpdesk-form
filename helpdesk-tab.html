@@ -1544,11 +1544,33 @@ function switchView(view) {
 }
 
 // ===== SEARCH =====
+let srchOwnCases = null; // ข้อมูลที่ search โหลดมาเอง (แยกจาก dbRawCases)
+
 function srchOnDateChange() {
   const val = document.getElementById('srchDatePreset').value;
-  const customRange = document.getElementById('srchCustomRange');
-  customRange.style.display = val === 'custom' ? 'flex' : 'none';
-  if (val !== 'custom') srchRun();
+  document.getElementById('srchCustomRange').style.display = val === 'custom' ? 'flex' : 'none';
+  if (val && val !== 'custom') srchLoadData();
+  if (!val) { srchOwnCases = null; srchRun(); }
+}
+
+async function srchLoadData() {
+  const { from, to } = srchGetDateRange();
+  if (!from || !to) { srchRun(); return; }
+  const label = document.getElementById('srchResultLabel');
+  label.innerHTML = '<span style="color:#9ca3af;">⏳ กำลังโหลดข้อมูล...</span>';
+  try {
+    const res = await fetch(DB_FLOW_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ startDate: from, endDate: to })
+    });
+    const raw = await res.json();
+    srchOwnCases = Array.isArray(raw) ? raw : (raw.value || []);
+    srchPopulateDropdowns();
+    srchRun();
+  } catch(e) {
+    label.innerHTML = '<span style="color:#ef4444;">โหลดข้อมูลไม่สำเร็จ</span>';
+  }
 }
 
 function srchGetDateRange() {
@@ -1597,10 +1619,10 @@ function srchRun() {
   const enVal = document.getElementById('srchEngineer').value;
   const { from: frVal, to: toVal } = srchGetDateRange();
 
-  // แหล่งข้อมูล: รวม dashboard data + my cases
-  const pool = [...(dbRawCases || []), ...(allCases || [])];
+  // แหล่งข้อมูล: ถ้า search โหลดมาเองให้ใช้ srchOwnCases ไม่งั้นใช้ dbRawCases + allCases
+  const base = srchOwnCases !== null ? srchOwnCases : [...(dbRawCases || []), ...(allCases || [])];
   const seen = new Set();
-  const uniq = pool.filter(c => { const id = c.caseId||Math.random(); if(seen.has(id)) return false; seen.add(id); return true; });
+  const uniq = base.filter(c => { const id = c.caseId||Math.random(); if(seen.has(id)) return false; seen.add(id); return true; });
 
   const results = uniq.filter(c => {
     if (stVal && c.status !== stVal) return false;
@@ -1665,6 +1687,7 @@ function srchClear() {
   document.getElementById('srchFrom').value = '';
   document.getElementById('srchTo').value = '';
   document.getElementById('srchCustomRange').style.display = 'none';
+  srchOwnCases = null;
   srchRun();
 }
 
