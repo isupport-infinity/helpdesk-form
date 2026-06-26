@@ -547,6 +547,10 @@ body {
     <!-- Form -->
     <div id="ncFormBody">
       <div class="form-field">
+        <div class="modal-label">📅 วันรับแจ้งเคส</div>
+        <input type="datetime-local" class="modal-note" style="min-height:unset;margin-bottom:0;" id="ncReceivedTime"/>
+      </div>
+      <div class="form-field">
         <div class="modal-label">👤 Engineer Assigned</div>
         <select class="modal-note" style="min-height:unset;margin-bottom:0;" id="ncEngineerSelect">
           <option value="">-- กำลังโหลด... --</option>
@@ -905,6 +909,10 @@ function switchView(view) {
 }
 
 function openNewCase() {
+  // Set default datetime to now (local time)
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  document.getElementById('ncReceivedTime').value = now.toISOString().slice(0, 16);
   document.getElementById('ncOverlay').classList.add('show');
   if (!ncDataLoaded) ncLoadInitialData();
 }
@@ -1178,7 +1186,8 @@ async function ncSubmitCase() {
         severity: ncSelectedSeverity,
         engineerEmail: selEngEmail, engineerName: selEngName,
         detail, poNumber: ncSelectedPO, product,
-        senderName: ncSelectedContact.name, senderEmail: ncSelectedContact.email
+        senderName: ncSelectedContact.name, senderEmail: ncSelectedContact.email,
+        receivedTime: new Date(document.getElementById('ncReceivedTime').value).toISOString()
       })
     });
     const data = await res.json();
