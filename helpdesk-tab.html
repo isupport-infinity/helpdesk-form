@@ -1446,7 +1446,7 @@ function ncResetAndGoHome() {
 }
 
 // ===== DASHBOARD =====
-const DB_FLOW_URL = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/fcf06042058540ebbb40ed15dd5e0ab3/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=KfmZkpuK83E3gVQvBMb2kbIE5z4kKi48lUMiS73AhTA';
+const DB_FLOW_URL = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/fcf06042058540ebbb40ed15dd5e0ab3/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=tb05UdAglSljp2Zm58U-GrtEVHWpXm_R4LXNwhSdarI';
 
 const DB_COLORS = {
   status: ['#4b3fce','#f59e0b','#10b981','#ef4444','#8b5cf6'],
@@ -1473,7 +1473,7 @@ async function dbLoadData() {
     const res  = await fetch(DB_FLOW_URL, {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ dateFrom: from, dateTo: to })
+      body: JSON.stringify({ startDate: from, endDate: to })
     });
     const data = await res.json();
     dbRender(data);
