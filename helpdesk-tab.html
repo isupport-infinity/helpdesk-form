@@ -7,6 +7,7 @@
 <script src="https://unpkg.com/@microsoft/teams-js@2.19.0/dist/MicrosoftTeams.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -449,6 +450,14 @@ body {
   font-family: inherit; transition: background 0.15s;
 }
 .db-load-btn:hover { background: #3d38a0; }
+.db-export-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: #16a34a; color: #fff; border: none;
+  border-radius: 8px; padding: 8px 16px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  font-family: inherit; transition: background 0.15s;
+}
+.db-export-btn:hover { background: #15803d; }
 .db-last-update { font-size: 11px; color: #9ca3af; margin-left: auto; }
 
 .kpi-grid {
@@ -688,6 +697,13 @@ body {
               <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
             </svg>
             โหลดข้อมูล
+          </button>
+          <button class="db-export-btn" id="dbExportBtn" onclick="dbExport()" style="display:none;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Export Excel
           </button>
           <span class="db-last-update" id="dbLastUpdate"></span>
         </div>
@@ -1552,7 +1568,8 @@ async function dbLoadData() {
     const raw = await res.json();
     dbRawCases = Array.isArray(raw) ? raw : (raw.value || []);
     dbPopulateFilters(dbRawCases);
-    document.getElementById('dbFilterBar').style.display = 'flex';
+    document.getElementById('dbFilterBar').style.display  = 'flex';
+    document.getElementById('dbExportBtn').style.display  = 'flex';
     dbApplyFilter();
     const now = new Date();
     document.getElementById('dbLastUpdate').textContent =
@@ -1619,6 +1636,62 @@ function dbRender(cases) {
     { label:'In Progress',  data: stProg, color: DB_COLORS.stack[1] },
     { label:'Completed',    data: stDone, color: DB_COLORS.stack[2] }
   ]);
+}
+
+function dbExport() {
+  // ดึงข้อมูล filtered ปัจจุบัน (เหมือน dbApplyFilter)
+  const cust = document.getElementById('dbFilterCustomer').value;
+  const eng  = document.getElementById('dbFilterEngineer').value;
+  let rows = dbRawCases;
+  if (cust) rows = rows.filter(c => (c.customer || 'Unknown') === cust);
+  if (eng)  rows = rows.filter(c => (c.engineer || 'Unassigned') === eng);
+
+  if (rows.length === 0) { alert('ไม่มีข้อมูลสำหรับ export'); return; }
+
+  // Map columns ให้ตรงกับ SharePoint list
+  const data = rows.map(c => ({
+    'Case ID':          c.caseId        || '',
+    'Case Title':       c.caseTitle     || c.title || '',
+    'Customer':         c.customer      || '',
+    'Contact Name':     c.contactName   || c.contact || '',
+    'Engineer':         c.engineer      || '',
+    'Status':           c.status        || '',
+    'Severity':         c.severity      || '',
+    'PO Number':        c.poNumber      || c.po || '',
+    'Product':          c.product       || '',
+    'Received Time':    c.receivedTime  ? new Date(c.receivedTime).toLocaleString('th-TH') : '',
+    'Closed Time':      c.closedTime    ? new Date(c.closedTime).toLocaleString('th-TH')   : '',
+    'Update Log':       c.updateLog     || '',
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(data);
+
+  // Auto column width
+  const cols = Object.keys(data[0]);
+  ws['!cols'] = cols.map(key => {
+    const maxLen = Math.max(
+      key.length,
+      ...data.map(r => String(r[key] || '').length)
+    );
+    return { wch: Math.min(maxLen + 2, 50) };
+  });
+
+  // Style header row (ใช้ SheetJS CE ซึ่งไม่ support style แต่ freeze panes ได้)
+  ws['!freeze'] = { xSplit: 0, ySplit: 1 };
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'iCare Cases');
+
+  // ชื่อไฟล์อ้างอิง filter + วันที่
+  const { from, to } = dbGetDateRange();
+  const suffix = [
+    from, 'to', to,
+    cust ? '_' + cust.replace(/[^a-zA-Z0-9ก-ฮ]/g, '') : '',
+    eng  ? '_' + eng.replace(/\s+/g, '')                : ''
+  ].join('');
+  const filename = `iCare_Cases_${suffix}.xlsx`;
+
+  XLSX.writeFile(wb, filename);
 }
 
 function dbPopulateFilters(cases) {
