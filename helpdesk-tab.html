@@ -525,6 +525,38 @@ body {
 .donut-center-num   { font-size: 28px; font-weight: 800; color: #1a1a2e; line-height: 1; }
 .donut-center-label { font-size: 11px; color: #9ca3af; margin-top: 2px; }
 
+/* ===== DASHBOARD FILTER ===== */
+.db-filter-bar {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 16px; flex-wrap: wrap;
+}
+.db-filter-label {
+  font-size: 12px; font-weight: 700; color: #9ca3af;
+  text-transform: uppercase; letter-spacing: 0.6px; white-space: nowrap;
+}
+.db-filter-select {
+  background: #fff; border: 1.5px solid #e8e8ee;
+  border-radius: 8px; padding: 7px 12px;
+  font-size: 13px; font-family: inherit;
+  color: #1a1a2e; cursor: pointer; outline: none;
+  min-width: 170px; transition: border-color 0.15s;
+}
+.db-filter-select:focus  { border-color: #4b3fce; }
+.db-filter-select.active { border-color: #4b3fce; background: #f5f3ff; color: #4b3fce; font-weight: 600; }
+.db-filter-clear {
+  background: none; border: 1.5px solid #e8e8ee;
+  border-radius: 8px; padding: 7px 12px;
+  font-size: 12px; font-family: inherit;
+  color: #9ca3af; cursor: pointer; transition: all 0.15s;
+  display: none;
+}
+.db-filter-clear:hover { border-color: #ef4444; color: #ef4444; }
+.db-filter-count {
+  font-size: 11px; font-weight: 700; padding: 4px 12px;
+  border-radius: 20px; background: #ede9ff; color: #4b3fce;
+  display: none;
+}
+
 /* ===== FAB ===== */
 .fab {
   position: fixed;
@@ -658,6 +690,18 @@ body {
             โหลดข้อมูล
           </button>
           <span class="db-last-update" id="dbLastUpdate"></span>
+        </div>
+
+        <div class="db-filter-bar" id="dbFilterBar" style="display:none;">
+          <span class="db-filter-label">🔍 Filter</span>
+          <select class="db-filter-select" id="dbFilterCustomer" onchange="dbApplyFilter()">
+            <option value="">ลูกค้าทั้งหมด</option>
+          </select>
+          <select class="db-filter-select" id="dbFilterEngineer" onchange="dbApplyFilter()">
+            <option value="">Engineer ทั้งหมด</option>
+          </select>
+          <button class="db-filter-clear" id="dbFilterClearBtn" onclick="dbClearFilter()">✕ ล้าง Filter</button>
+          <span class="db-filter-count" id="dbFilterCount"></span>
         </div>
 
         <div class="db-section-head"><h2>ภาพรวม</h2></div>
@@ -1466,7 +1510,8 @@ const DB_COLORS = {
   stack:  ['#4b3fce','#f59e0b','#10b981']
 };
 
-let dbCharts = {};
+let dbCharts   = {};
+let dbRawCases = [];
 
 function dbInitDates() {
   // default = Last 30 Days, custom fields hidden
@@ -1504,8 +1549,11 @@ async function dbLoadData() {
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ startDate: from, endDate: to })
     });
-    const data = await res.json();
-    dbRender(data);
+    const raw = await res.json();
+    dbRawCases = Array.isArray(raw) ? raw : (raw.value || []);
+    dbPopulateFilters(dbRawCases);
+    document.getElementById('dbFilterBar').style.display = 'flex';
+    dbApplyFilter();
     const now = new Date();
     document.getElementById('dbLastUpdate').textContent =
       'อัปเดต ' + now.toLocaleTimeString('th-TH', {hour:'2-digit',minute:'2-digit'});
@@ -1515,8 +1563,7 @@ async function dbLoadData() {
   if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
 }
 
-function dbRender(data) {
-  const cases    = Array.isArray(data) ? data : (data.value || []);
+function dbRender(cases) {
   const total    = cases.length;
   const byStatus = {};
   const bySev    = {};
@@ -1572,6 +1619,54 @@ function dbRender(data) {
     { label:'In Progress',  data: stProg, color: DB_COLORS.stack[1] },
     { label:'Completed',    data: stDone, color: DB_COLORS.stack[2] }
   ]);
+}
+
+function dbPopulateFilters(cases) {
+  const customers = [...new Set(cases.map(c => c.customer || 'Unknown'))].sort();
+  const engineers = [...new Set(cases.map(c => c.engineer || 'Unassigned'))].sort();
+  const custSel   = document.getElementById('dbFilterCustomer');
+  const engSel    = document.getElementById('dbFilterEngineer');
+  const prevCust  = custSel.value;
+  const prevEng   = engSel.value;
+  custSel.innerHTML = '<option value="">ลูกค้าทั้งหมด</option>';
+  customers.forEach(c => {
+    const o = document.createElement('option');
+    o.value = c; o.textContent = c;
+    custSel.appendChild(o);
+  });
+  engSel.innerHTML = '<option value="">Engineer ทั้งหมด</option>';
+  engineers.forEach(e => {
+    const o = document.createElement('option');
+    o.value = e; o.textContent = e;
+    engSel.appendChild(o);
+  });
+  custSel.value = prevCust;
+  engSel.value  = prevEng;
+}
+
+function dbApplyFilter() {
+  const cust    = document.getElementById('dbFilterCustomer').value;
+  const eng     = document.getElementById('dbFilterEngineer').value;
+  const custSel = document.getElementById('dbFilterCustomer');
+  const engSel  = document.getElementById('dbFilterEngineer');
+  const clearBtn = document.getElementById('dbFilterClearBtn');
+  const badge    = document.getElementById('dbFilterCount');
+  let filtered = dbRawCases;
+  if (cust) filtered = filtered.filter(c => (c.customer || 'Unknown') === cust);
+  if (eng)  filtered = filtered.filter(c => (c.engineer || 'Unassigned') === eng);
+  custSel.className = 'db-filter-select' + (cust ? ' active' : '');
+  engSel.className  = 'db-filter-select' + (eng  ? ' active' : '');
+  const isFiltered = !!(cust || eng);
+  clearBtn.style.display = isFiltered ? 'inline-block' : 'none';
+  badge.style.display    = isFiltered ? 'inline-block' : 'none';
+  if (isFiltered) badge.textContent = filtered.length + ' เคส';
+  dbRender(filtered);
+}
+
+function dbClearFilter() {
+  document.getElementById('dbFilterCustomer').value = '';
+  document.getElementById('dbFilterEngineer').value = '';
+  dbApplyFilter();
 }
 
 function dbDestroy(id) {
