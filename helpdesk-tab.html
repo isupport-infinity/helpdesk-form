@@ -161,6 +161,10 @@ body {
   box-shadow: 0 1px 3px rgba(0,0,0,0.06);
   transition: box-shadow 0.15s, transform 0.1s;
 }
+.case-card.active-case {
+  background: #fff1f2;
+  border-left: 3px solid #f87171;
+}
 .case-card:hover {
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   transform: translateY(-1px);
@@ -1170,7 +1174,7 @@ function caseCard(c, isClosed) {
   const meta = [c.customer, time].filter(Boolean).join(' · ');
   const rightBadge = isClosed ? badgeHtml('Closed','closed') : severityBadge(c.severity);
   return `
-    <div class="case-card" onclick='openModal(${JSON.stringify(c).replace(/'/g,"&#39;")})'>
+    <div class="case-card ${isClosed ? '' : 'active-case'}" onclick='openModal(${JSON.stringify(c).replace(/'/g,"&#39;")})'>
       <span class="case-id-pill">${c.caseId || '-'}</span>
       <div class="case-body">
         <div class="case-title">${c.caseTitle || '-'}</div>
