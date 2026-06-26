@@ -553,21 +553,25 @@ function statusBadge(status) {
 
 // ===== INIT =====
 async function init() {
-  // 1. ลอง Teams SDK ก่อน (timeout 2 วิ)
-  try {
-    await Promise.race([
-      microsoftTeams.app.initialize(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2000))
-    ]);
-    const ctx = await microsoftTeams.app.getContext();
-    engineerEmail = ctx.user?.loginHint || ctx.user?.userPrincipalName || '';
-    engineerName  = ctx.user?.displayName || engineerEmail.split('@')[0] || 'Engineer';
-    setUserBadge(engineerName);
-    await loadMyCases();
-    return; // อยู่ใน Teams → จบ
-  } catch(e) {}
+  const isInIframe = window !== window.top;
 
-  // 2. Browser mode → ใช้ MSAL
+  if (isInIframe) {
+    // อยู่ใน Teams (iframe) → ใช้ Teams SDK อย่างเดียว
+    try {
+      await microsoftTeams.app.initialize();
+      const ctx = await microsoftTeams.app.getContext();
+      engineerEmail = ctx.user?.loginHint || ctx.user?.userPrincipalName || '';
+      engineerName  = ctx.user?.displayName || engineerEmail.split('@')[0] || 'Engineer';
+      setUserBadge(engineerName);
+      await loadMyCases();
+    } catch(e) {
+      document.getElementById('loadingScreen').innerHTML =
+        '<div style="color:#ef4444;font-size:14px;text-align:center;">โหลดไม่สำเร็จ กรุณารีเฟรช</div>';
+    }
+    return;
+  }
+
+  // Browser mode → ใช้ MSAL
   await msalInstance.handleRedirectPromise();
   const accounts = msalInstance.getAllAccounts();
   if (accounts.length === 0) {
