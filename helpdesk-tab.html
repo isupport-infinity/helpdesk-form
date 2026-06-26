@@ -22,65 +22,100 @@ body {
 
 /* ===== SIDEBAR ===== */
 .sidebar {
-  width: 210px;
+  width: 220px;
   min-height: 100vh;
-  background: #1e1b4b;
+  background: #1a1410;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+  position: relative;
+}
+.sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(ellipse at 15% 60%, rgba(249,115,22,0.07) 0%, transparent 55%);
+  pointer-events: none;
 }
 .sidebar-logo {
-  padding: 18px 16px 16px;
-  color: #fff;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 1.2px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  padding: 14px 16px;
   display: flex;
   align-items: center;
   gap: 10px;
+  background: rgba(249,115,22,0.06);
+  border-bottom: 1px solid rgba(249,115,22,0.1);
+  position: relative;
 }
 .sidebar-logo-icon {
-  width: 30px; height: 30px;
-  background: #4b3fce;
-  border-radius: 7px;
+  width: 34px; height: 34px;
+  background: #f97316;
+  border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
   font-size: 15px;
   flex-shrink: 0;
 }
-.sidebar-nav { flex: 1; padding: 10px 0; }
+.sidebar-logo-text { display: flex; flex-direction: column; }
+.sidebar-logo-title {
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  line-height: 1.2;
+}
+.sidebar-logo-sub {
+  color: rgba(255,255,255,0.3);
+  font-size: 9px;
+  margin-top: 2px;
+  letter-spacing: 0.02em;
+}
+.sidebar-nav { flex: 1; padding: 10px 0; position: relative; }
 .nav-item {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 11px 16px;
-  color: rgba(255,255,255,0.55);
-  font-size: 14px;
+  color: rgba(255,255,255,0.4);
+  font-size: 13px;
   cursor: pointer;
   border-left: 3px solid transparent;
   transition: all 0.15s;
   user-select: none;
 }
-.nav-item:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.9); }
+.nav-item:hover { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.75); }
 .nav-item.active {
-  background: rgba(255,255,255,0.11);
-  color: #fff;
-  border-left-color: #7c6fef;
-  font-weight: 600;
+  background: rgba(249,115,22,0.14);
+  color: #fed7aa;
+  border-left-color: #f97316;
+  font-weight: 500;
 }
+.nav-item.active .nav-icon { stroke: #fb923c; }
 .nav-icon { width: 17px; height: 17px; flex-shrink: 0; }
 .sidebar-bottom {
-  padding: 14px 16px;
-  border-top: 1px solid rgba(255,255,255,0.08);
+  padding: 12px 16px;
+  border-top: 1px solid rgba(249,115,22,0.08);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
 }
+.sidebar-avatar {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600; color: #fff;
+  flex-shrink: 0;
+}
+.sidebar-user-info { flex: 1; min-width: 0; }
+.sidebar-user-name { font-size: 12px; color: rgba(255,255,255,0.6); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-user-role { font-size: 10px; color: rgba(255,255,255,0.25); }
 .nav-settings {
-  display: flex; align-items: center; gap: 10px;
-  padding: 8px 0;
-  color: rgba(255,255,255,0.4);
-  font-size: 13px;
+  display: flex; align-items: center;
+  color: rgba(255,255,255,0.25);
   cursor: pointer;
+  flex-shrink: 0;
 }
-.nav-settings:hover { color: rgba(255,255,255,0.75); }
+.nav-settings:hover { color: rgba(255,255,255,0.6); }
 
 /* ===== MAIN ===== */
 .main {
@@ -658,11 +693,16 @@ body {
 <!-- ===== SIDEBAR ===== -->
 <div class="sidebar">
   <div class="sidebar-logo">
-    <img src="logo.png" alt="Infinity Solution Service"
-      style="height:32px;width:auto;object-fit:contain;border-radius:6px;background:#fff;padding:2px 5px;flex-shrink:0;"
-      onerror="this.style.display='none';document.getElementById('sidebarFallbackIcon').style.display='flex';">
-    <div id="sidebarFallbackIcon" class="sidebar-logo-icon" style="display:none;">🎫</div>
-    ICARE HELPDESK
+    <div class="sidebar-logo-icon" id="sidebarLogoBox">
+      <img src="logo.png" alt="Infinity Solution Service"
+        style="width:28px;height:28px;object-fit:contain;border-radius:6px;"
+        onerror="this.style.display='none';document.getElementById('sidebarFallbackText').style.display='block';">
+      <span id="sidebarFallbackText" style="display:none;color:#fff;font-size:10px;font-weight:700;">INF</span>
+    </div>
+    <div class="sidebar-logo-text">
+      <div class="sidebar-logo-title">ICARE HELPDESK</div>
+      <div class="sidebar-logo-sub">Infinity Solution Service</div>
+    </div>
   </div>
   <nav class="sidebar-nav">
     <div class="nav-item active" id="navDashboard" onclick="switchView('dashboard')">
@@ -698,12 +738,16 @@ body {
     </div>
   </nav>
   <div class="sidebar-bottom">
+    <div class="sidebar-avatar" id="sidebarAvatar">--</div>
+    <div class="sidebar-user-info">
+      <div class="sidebar-user-name" id="sidebarUserName">Loading...</div>
+      <div class="sidebar-user-role">iCare User</div>
+    </div>
     <div class="nav-settings">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="12" cy="12" r="3"/>
         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
       </svg>
-      ตั้งค่า
     </div>
   </div>
 </div>
@@ -1184,6 +1228,10 @@ function setUserBadge(name) {
   document.getElementById('userName').textContent = name;
   const mobileAvatar = document.getElementById('mobileAvatarText');
   if (mobileAvatar) mobileAvatar.textContent = ini;
+  const sbAvatar = document.getElementById('sidebarAvatar');
+  if (sbAvatar) sbAvatar.textContent = ini;
+  const sbName = document.getElementById('sidebarUserName');
+  if (sbName) sbName.textContent = name;
 }
 
 // ===== FALLBACK: Engineer Selector =====
