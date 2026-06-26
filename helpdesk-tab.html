@@ -1086,8 +1086,22 @@ body {
           <select id="srchEngineer" onchange="srchRun()" style="height:32px;border:1px solid #e5e7eb;border-radius:6px;padding:0 10px;font-size:12px;color:#374151;background:#fff;font-family:inherit;">
             <option value="">Engineer ทั้งหมด</option>
           </select>
-          <input id="srchFrom" type="date" onchange="srchRun()" style="height:32px;border:1px solid #e5e7eb;border-radius:6px;padding:0 8px;font-size:12px;color:#374151;background:#fff;font-family:inherit;">
-          <input id="srchTo" type="date" onchange="srchRun()" style="height:32px;border:1px solid #e5e7eb;border-radius:6px;padding:0 8px;font-size:12px;color:#374151;background:#fff;font-family:inherit;">
+          <div style="display:flex;align-items:center;gap:6px;height:32px;border:1px solid #e5e7eb;border-radius:6px;padding:0 10px;background:#fff;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" style="flex-shrink:0;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <select id="srchDatePreset" onchange="srchOnDateChange()" style="border:none;background:transparent;font-size:12px;font-family:inherit;color:#374151;cursor:pointer;outline:none;padding:0;">
+              <option value="">ช่วงเวลาทั้งหมด</option>
+              <option value="7">Last 7 Days</option>
+              <option value="30">Last 30 Days</option>
+              <option value="180">Last 6 Months</option>
+              <option value="365">Last 1 Year</option>
+              <option value="custom">Custom Time Range</option>
+            </select>
+          </div>
+          <div id="srchCustomRange" style="display:none;align-items:center;gap:6px;">
+            <input id="srchFrom" type="date" onchange="srchRun()" style="height:32px;border:1px solid #e5e7eb;border-radius:6px;padding:0 8px;font-size:12px;color:#374151;background:#fff;font-family:inherit;">
+            <span style="font-size:12px;color:#9ca3af;">—</span>
+            <input id="srchTo" type="date" onchange="srchRun()" style="height:32px;border:1px solid #e5e7eb;border-radius:6px;padding:0 8px;font-size:12px;color:#374151;background:#fff;font-family:inherit;">
+          </div>
           <button id="srchClearBtn" onclick="srchClear()" style="display:none;height:32px;padding:0 12px;background:none;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#6b7280;cursor:pointer;font-family:inherit;">✕ ล้าง</button>
         </div>
 
@@ -1505,7 +1519,7 @@ function switchView(view) {
   document.getElementById('myCasesView').style.display   = view === 'myCases'   ? 'block' : 'none';
   document.getElementById('historyView').style.display   = view === 'history'   ? 'block' : 'none';
   document.getElementById('searchView').style.display    = view === 'search'    ? 'block' : 'none';
-  document.getElementById('newCaseBtn').style.display    = view === 'dashboard' ? 'none'  : 'flex';
+  document.getElementById('newCaseBtn').style.display    = (view === 'dashboard' || view === 'search') ? 'none' : 'flex';
   const titles = { dashboard: 'Dashboard', myCases: 'เคสของฉัน', history: 'ประวัติเคส', search: 'ค้นหาเคส' };
   document.getElementById('pageTitle').textContent = titles[view] || '';
   const icons = {
@@ -1530,6 +1544,28 @@ function switchView(view) {
 }
 
 // ===== SEARCH =====
+function srchOnDateChange() {
+  const val = document.getElementById('srchDatePreset').value;
+  const customRange = document.getElementById('srchCustomRange');
+  customRange.style.display = val === 'custom' ? 'flex' : 'none';
+  if (val !== 'custom') srchRun();
+}
+
+function srchGetDateRange() {
+  const val = document.getElementById('srchDatePreset').value;
+  if (!val) return { from: null, to: null };
+  if (val === 'custom') {
+    return {
+      from: document.getElementById('srchFrom').value || null,
+      to:   document.getElementById('srchTo').value   || null
+    };
+  }
+  const now  = new Date();
+  const to   = now.toISOString().substring(0,10);
+  const from = new Date(now - parseInt(val)*86400*1000).toISOString().substring(0,10);
+  return { from, to };
+}
+
 function srchPopulateDropdowns() {
   const allData = [...(dbRawCases || []), ...(allCases || [])];
   const customers = [...new Set(allData.map(c => c.customer).filter(Boolean))].sort();
@@ -1559,8 +1595,7 @@ function srchRun() {
   const svVal = document.getElementById('srchSeverity').value;
   const cuVal = document.getElementById('srchCustomer').value;
   const enVal = document.getElementById('srchEngineer').value;
-  const frVal = document.getElementById('srchFrom').value;
-  const toVal = document.getElementById('srchTo').value;
+  const { from: frVal, to: toVal } = srchGetDateRange();
 
   // แหล่งข้อมูล: รวม dashboard data + my cases
   const pool = [...(dbRawCases || []), ...(allCases || [])];
@@ -1572,8 +1607,8 @@ function srchRun() {
     if (svVal && c.severity !== svVal) return false;
     if (cuVal && (c.customer||'') !== cuVal) return false;
     if (enVal && (c.engineer||'') !== enVal) return false;
-    if (frVal && c.receivedTime && new Date(c.receivedTime) < new Date(frVal)) return false;
-    if (toVal && c.receivedTime && new Date(c.receivedTime) > new Date(toVal + 'T23:59:59')) return false;
+    if (frVal && c.receivedTime && new Date(c.receivedTime) < new Date(frVal+'T00:00:00')) return false;
+    if (toVal && c.receivedTime && new Date(c.receivedTime) > new Date(toVal+'T23:59:59')) return false;
     if (kw) {
       const haystack = [c.caseId, c.caseTitle, c.customer, c.engineer, c.status, c.severity, c.product].join(' ').toLowerCase();
       if (!haystack.includes(kw)) return false;
@@ -1626,8 +1661,10 @@ function srchClear() {
   document.getElementById('srchSeverity').value = '';
   document.getElementById('srchCustomer').value = '';
   document.getElementById('srchEngineer').value = '';
+  document.getElementById('srchDatePreset').value = '';
   document.getElementById('srchFrom').value = '';
   document.getElementById('srchTo').value = '';
+  document.getElementById('srchCustomRange').style.display = 'none';
   srchRun();
 }
 
