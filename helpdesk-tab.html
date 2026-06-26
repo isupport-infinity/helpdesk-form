@@ -722,6 +722,22 @@ body {
   .case-id-pill { font-size: 10px; flex-shrink: 0; }
   .modal { border-radius: 16px 16px 0 0; max-height: 95vh; }
   .fab { bottom: 16px; right: 16px; }
+
+  /* Search view — mobile */
+  #searchView { padding: 12px !important; }
+  #searchView .srch-filter-row { display: none !important; }
+  #searchView .srch-mobile-filters { display: flex !important; }
+  #searchView table thead { display: none; }
+  #searchView table, #searchView tbody, #searchView tr, #searchView td { display: block; width: 100%; }
+  #searchView tr { background: #fff; border-radius: 10px; border: 0.5px solid #e5e7eb; margin-bottom: 8px; padding: 10px 12px; cursor: pointer; }
+  #searchView tr:hover { background: #fff7ed !important; }
+  #searchView td { padding: 0 !important; border: none !important; background: transparent !important; font-size: 12px; }
+  #searchView td:nth-child(1) { font-size: 11px; color: #f97316; font-weight: 700; margin-bottom: 3px; }
+  #searchView td:nth-child(2) { color: #111827; font-weight: 500; margin-bottom: 4px; white-space: normal !important; overflow: visible !important; text-overflow: unset !important; max-width: 100% !important; }
+  #searchView td:nth-child(3), #searchView td:nth-child(4) { display: inline; color: #9ca3af; font-size: 11px; }
+  #searchView td:nth-child(3)::after { content: ' · '; color: #d1d5db; }
+  #searchView td:nth-child(5), #searchView td:nth-child(6) { display: inline-block; margin-top: 5px; margin-right: 4px; }
+  #searchView td:nth-child(7) { display: block; font-size: 10px; color: #9ca3af; margin-top: 3px; }
 }
 
 /* ===== FAB ===== */
@@ -824,6 +840,7 @@ body {
   <div class="mobile-tab active" id="mTabDashboard" onclick="switchView('dashboard')">Dashboard</div>
   <div class="mobile-tab" id="mTabMyCases" onclick="switchView('myCases')">เคสของฉัน</div>
   <div class="mobile-tab" id="mTabHistory" onclick="switchView('history')">ประวัติ</div>
+  <div class="mobile-tab" id="mTabSearch" onclick="switchView('search')">ค้นหา</div>
 </div>
 
 <!-- ===== MAIN ===== -->
@@ -1065,8 +1082,8 @@ body {
           </button>
         </div>
 
-        <!-- Filters -->
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center;">
+        <!-- Filters (desktop) -->
+        <div class="srch-filter-row" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center;">
           <select id="srchStatus" onchange="srchRun()" style="height:32px;border:1px solid #e5e7eb;border-radius:6px;padding:0 10px;font-size:12px;color:#374151;background:#fff;font-family:inherit;">
             <option value="">สถานะทั้งหมด</option>
             <option value="New">New</option>
@@ -1103,6 +1120,36 @@ body {
             <input id="srchTo" type="date" onchange="srchRun()" style="height:32px;border:1px solid #e5e7eb;border-radius:6px;padding:0 8px;font-size:12px;color:#374151;background:#fff;font-family:inherit;">
           </div>
           <button id="srchClearBtn" onclick="srchClear()" style="display:none;height:32px;padding:0 12px;background:none;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#6b7280;cursor:pointer;font-family:inherit;">✕ ล้าง</button>
+        </div>
+
+        <!-- Filters (mobile) — chip style, scroll horizontal -->
+        <div class="srch-mobile-filters" style="display:none;gap:6px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px;-webkit-overflow-scrolling:touch;">
+          <select id="srchStatusM" onchange="srchSyncMobile('status',this.value)" style="height:28px;border:1px solid #e5e7eb;border-radius:20px;padding:0 10px;font-size:11px;color:#374151;background:#fff;font-family:inherit;flex-shrink:0;white-space:nowrap;">
+            <option value="">สถานะ</option>
+            <option value="New">New</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Completed">Completed</option>
+          </select>
+          <select id="srchSeverityM" onchange="srchSyncMobile('severity',this.value)" style="height:28px;border:1px solid #e5e7eb;border-radius:20px;padding:0 10px;font-size:11px;color:#374151;background:#fff;font-family:inherit;flex-shrink:0;">
+            <option value="">Severity</option>
+            <option value="Critical">Critical</option>
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </select>
+          <select id="srchCustomerM" onchange="srchSyncMobile('customer',this.value)" style="height:28px;border:1px solid #e5e7eb;border-radius:20px;padding:0 10px;font-size:11px;color:#374151;background:#fff;font-family:inherit;flex-shrink:0;">
+            <option value="">ลูกค้า</option>
+          </select>
+          <select id="srchEngineerM" onchange="srchSyncMobile('engineer',this.value)" style="height:28px;border:1px solid #e5e7eb;border-radius:20px;padding:0 10px;font-size:11px;color:#374151;background:#fff;font-family:inherit;flex-shrink:0;">
+            <option value="">Engineer</option>
+          </select>
+          <select id="srchDatePresetM" onchange="srchSyncMobile('date',this.value)" style="height:28px;border:1px solid #e5e7eb;border-radius:20px;padding:0 10px;font-size:11px;color:#374151;background:#fff;font-family:inherit;flex-shrink:0;white-space:nowrap;">
+            <option value="">ช่วงเวลา</option>
+            <option value="7">Last 7 Days</option>
+            <option value="30">Last 30 Days</option>
+            <option value="180">Last 6 Months</option>
+            <option value="365">Last 1 Year</option>
+          </select>
         </div>
 
         <!-- Result count -->
@@ -1535,7 +1582,7 @@ function switchView(view) {
   if (navMap[view]) document.getElementById(navMap[view]).classList.add('active');
   // Mobile tab nav
   document.querySelectorAll('.mobile-tab').forEach(el => el.classList.remove('active'));
-  const mTabMap = { dashboard: 'mTabDashboard', myCases: 'mTabMyCases', history: 'mTabHistory' };
+  const mTabMap = { dashboard: 'mTabDashboard', myCases: 'mTabMyCases', history: 'mTabHistory', search: 'mTabSearch' };
   if (mTabMap[view]) document.getElementById(mTabMap[view]).classList.add('active');
   // โหลด cases เมื่อสลับมาหน้าที่ต้องใช้
   if ((view === 'myCases' || view === 'history') && allCases.length === 0) loadMyCases();
@@ -1589,15 +1636,30 @@ function srchGetDateRange() {
 }
 
 function srchPopulateDropdowns() {
-  const allData = [...(dbRawCases || []), ...(allCases || [])];
-  const customers = [...new Set(allData.map(c => c.customer).filter(Boolean))].sort();
-  const engineers = [...new Set(allData.map(c => c.engineer).filter(Boolean))].sort();
-  const custSel = document.getElementById('srchCustomer');
-  const engSel  = document.getElementById('srchEngineer');
-  const prevC = custSel.value, prevE = engSel.value;
-  custSel.innerHTML = '<option value="">ลูกค้าทั้งหมด</option>' + customers.map(c=>`<option value="${c}">${c}</option>`).join('');
-  engSel.innerHTML  = '<option value="">Engineer ทั้งหมด</option>' + engineers.map(e=>`<option value="${e}">${e}</option>`).join('');
-  custSel.value = prevC; engSel.value = prevE;
+  const base = srchOwnCases !== null ? srchOwnCases : [...(dbRawCases || []), ...(allCases || [])];
+  const customers = [...new Set(base.map(c => c.customer).filter(Boolean))].sort();
+  const engineers = [...new Set(base.map(c => c.engineer).filter(Boolean))].sort();
+  const opts = (list, all) => `<option value="">${all}</option>` + list.map(v=>`<option value="${v}">${v}</option>`).join('');
+  ['srchCustomer','srchCustomerM'].forEach(id => {
+    const el = document.getElementById(id); if (!el) return;
+    const prev = el.value;
+    el.innerHTML = opts(customers, id.includes('M') ? 'ลูกค้า' : 'ลูกค้าทั้งหมด');
+    el.value = prev;
+  });
+  ['srchEngineer','srchEngineerM'].forEach(id => {
+    const el = document.getElementById(id); if (!el) return;
+    const prev = el.value;
+    el.innerHTML = opts(engineers, id.includes('M') ? 'Engineer' : 'Engineer ทั้งหมด');
+    el.value = prev;
+  });
+}
+
+function srchSyncMobile(field, val) {
+  if (field === 'status')   { document.getElementById('srchStatus').value = val; srchRun(); }
+  if (field === 'severity') { document.getElementById('srchSeverity').value = val; srchRun(); }
+  if (field === 'customer') { document.getElementById('srchCustomer').value = val; srchRun(); }
+  if (field === 'engineer') { document.getElementById('srchEngineer').value = val; srchRun(); }
+  if (field === 'date')     { document.getElementById('srchDatePreset').value = val; val ? srchLoadData() : (srchOwnCases = null, srchRun()); }
 }
 
 function srchHighlight(text, kw) {
