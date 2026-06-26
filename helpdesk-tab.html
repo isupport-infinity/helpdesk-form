@@ -1638,6 +1638,13 @@ function dbRender(cases) {
   ]);
 }
 
+function dbStripHtml(html) {
+  if (!html) return '';
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  return (tmp.textContent || tmp.innerText || '').trim();
+}
+
 function dbExport() {
   // ดึงข้อมูล filtered ปัจจุบัน (เหมือน dbApplyFilter)
   const cust = document.getElementById('dbFilterCustomer').value;
@@ -1661,7 +1668,7 @@ function dbExport() {
     'Product':          c.product       || '',
     'Received Time':    c.receivedTime  ? new Date(c.receivedTime).toLocaleString('th-TH') : '',
     'Closed Time':      c.closedTime    ? new Date(c.closedTime).toLocaleString('th-TH')   : '',
-    'Update Log':       c.updateLog     || '',
+    'Update Log':       dbStripHtml(c.updateLog),
   }));
 
   const ws = XLSX.utils.json_to_sheet(data);
