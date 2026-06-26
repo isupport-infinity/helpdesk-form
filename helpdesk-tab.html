@@ -1618,25 +1618,33 @@ function dbBuildBarV(id, labels, vals) {
 function dbBuildBarStacked(id, labels, datasets) {
   dbDestroy(id);
   const short = labels.map(l => l.length > 14 ? l.substring(0,12) + '…' : l);
+  const chartDatasets = datasets.map((d, di) => {
+    const isLast = di === datasets.length - 1;
+    return {
+      label: d.label, data: d.data, backgroundColor: d.color,
+      borderRadius: 2, borderSkipped: false,
+      datalabels: isLast ? {
+        anchor: 'end', align: 'top',
+        color: '#1a1a2e', font: { weight: '700', size: 11 },
+        formatter: (v, ctx) => {
+          const total = ctx.chart.data.datasets.reduce(
+            (sum, ds) => sum + (Number(ds.data[ctx.dataIndex]) || 0), 0
+          );
+          return total > 0 ? total : '';
+        }
+      } : { display: false }
+    };
+  });
   dbCharts[id] = new Chart(document.getElementById(id), {
     type: 'bar',
     plugins: [ChartDataLabels],
-    data: {
-      labels: short,
-      datasets: datasets.map(d => ({
-        label: d.label, data: d.data, backgroundColor: d.color,
-        borderRadius: 2, borderSkipped: false
-      }))
-    },
+    data: { labels: short, datasets: chartDatasets },
     options: {
       responsive: true, maintainAspectRatio: false,
+      layout: { padding: { top: 18 } },
       plugins: {
         legend: { position: 'bottom', labels: { padding: 12, font: { size: 11 }, boxWidth: 12 } },
-        datalabels: {
-          display: ctx => ctx.dataset.data[ctx.dataIndex] > 0,
-          color: '#fff', font: { weight: '700', size: 10 },
-          formatter: v => v > 0 ? v : ''
-        }
+        datalabels: { display: false }
       },
       scales: {
         x: { stacked: true, grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 35 } },
