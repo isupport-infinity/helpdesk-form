@@ -859,10 +859,10 @@ body {
           </div>
           <div class="chart-card">
             <div class="chart-header">
-              <div><div class="chart-title">ระดับความรุนแรง</div><div class="chart-desc">แบ่งตาม Severity</div></div>
-              <span class="chart-badge" id="badgeSev">0 เคส</span>
+              <div><div class="chart-title">Ticket Summary by Month</div><div class="chart-desc">จำนวนเคสต่อเดือน + Cumulative สะสม</div></div>
+              <span class="chart-badge" id="badgeMonthly">—</span>
             </div>
-            <div class="chart-wrap"><canvas id="chartSev"></canvas></div>
+            <div class="chart-wrap" style="height:260px;"><canvas id="chartMonthly"></canvas></div>
           </div>
         </div>
 
@@ -884,13 +884,13 @@ body {
           </div>
         </div>
 
-        <div class="db-section-head"><h2>รายเดือน</h2></div>
+        <div class="db-section-head"><h2>ความรุนแรง</h2></div>
         <div class="chart-card" style="margin-bottom:14px;">
           <div class="chart-header">
-            <div><div class="chart-title">Ticket Summary by Month</div><div class="chart-desc">จำนวนเคสต่อเดือน + Cumulative สะสม</div></div>
-            <span class="chart-badge" id="badgeMonthly">—</span>
+            <div><div class="chart-title">ระดับความรุนแรง</div><div class="chart-desc">แบ่งตาม Severity</div></div>
+            <span class="chart-badge" id="badgeSev">0 เคส</span>
           </div>
-          <div class="chart-wrap" style="height:300px;"><canvas id="chartMonthly"></canvas></div>
+          <div class="chart-wrap"><canvas id="chartSev"></canvas></div>
         </div>
 
         <div class="db-section-head"><h2>Product</h2></div>
@@ -1905,17 +1905,17 @@ function dbBuildMonthly(id, labels, mNew, mProg, mDone, mCum) {
       datasets: [
         {
           type: 'bar', label: 'New', data: mNew,
-          backgroundColor: '#4b3fce', stack: 'stack', borderRadius: 2,
+          backgroundColor: '#4b3fce', stack: 'stack', borderRadius: 2, order: 2,
           datalabels: { display: false }
         },
         {
           type: 'bar', label: 'In Progress', data: mProg,
-          backgroundColor: '#f59e0b', stack: 'stack', borderRadius: 2,
+          backgroundColor: '#f59e0b', stack: 'stack', borderRadius: 2, order: 2,
           datalabels: { display: false }
         },
         {
           type: 'bar', label: 'Completed', data: mDone,
-          backgroundColor: '#10b981', stack: 'stack', borderRadius: 2,
+          backgroundColor: '#10b981', stack: 'stack', borderRadius: 2, order: 2,
           datalabels: {
             display: ctx => {
               const total = mNew[ctx.dataIndex] + mProg[ctx.dataIndex] + mDone[ctx.dataIndex];
@@ -1930,7 +1930,7 @@ function dbBuildMonthly(id, labels, mNew, mProg, mDone, mCum) {
           type: 'line', label: 'Cumulative', data: mCum,
           borderColor: '#ef4444', backgroundColor: 'transparent',
           borderWidth: 2.5, tension: 0.3, pointRadius: 4,
-          pointBackgroundColor: '#ef4444', yAxisID: 'y2',
+          pointBackgroundColor: '#ef4444', yAxisID: 'y2', order: 1,
           datalabels: {
             display: true, anchor: 'top', align: 'top',
             color: '#ef4444', font: { weight: '700', size: 10 },
