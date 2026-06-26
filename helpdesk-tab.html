@@ -718,12 +718,10 @@ body {
 <!-- ===== SIDEBAR ===== -->
 <div class="sidebar">
   <div class="sidebar-logo">
-    <div class="sidebar-logo-icon" id="sidebarLogoBox">
-      <img src="logo.png" alt="Infinity Solution Service"
-        style="width:36px;height:36px;object-fit:contain;border-radius:6px;"
-        onerror="this.style.display='none';document.getElementById('sidebarFallbackText').style.display='block';">
-      <span id="sidebarFallbackText" style="display:none;color:#f97316;font-size:10px;font-weight:800;">INF</span>
-    </div>
+    <img src="logo.png" alt="Infinity Solution Service" id="sidebarLogoImg"
+      style="height:38px;width:auto;object-fit:contain;flex-shrink:0;"
+      onerror="this.style.display='none';document.getElementById('sidebarFallbackText').style.display='block';">
+    <span id="sidebarFallbackText" style="display:none;color:#f97316;font-size:13px;font-weight:800;flex-shrink:0;">INF</span>
     <div class="sidebar-logo-text">
       <div class="sidebar-logo-title">ICARE HELPDESK</div>
       <div class="sidebar-logo-sub">Infinity Solution Service</div>
