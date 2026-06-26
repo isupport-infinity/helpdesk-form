@@ -521,6 +521,35 @@ body {
   font-family: inherit; transition: background 0.15s;
 }
 .db-export-btn:hover { background: #15803d; }
+.db-export-wrap { position: relative; display: none; }
+.db-export-wrap.visible { display: block; }
+.db-export-main {
+  display: flex; align-items: center; gap: 6px;
+  background: #16a34a; color: #fff; border: none;
+  border-radius: 8px; padding: 8px 16px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  font-family: inherit; transition: background 0.15s; white-space: nowrap;
+}
+.db-export-main:hover { background: #15803d; }
+.db-export-dropdown {
+  display: none; position: absolute; top: calc(100% + 6px); right: 0;
+  background: #fff; border: 0.5px solid #e5e7eb; border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1); min-width: 170px; z-index: 999; overflow: hidden;
+}
+.db-export-dropdown.open { display: block; }
+.db-export-option {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; font-size: 13px; color: #374151;
+  cursor: pointer; transition: background 0.1s; border: none;
+  background: none; width: 100%; text-align: left; font-family: inherit;
+}
+.db-export-option:hover { background: #f9fafb; }
+.db-export-option .opt-icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.db-export-option.excel .opt-icon { background: #dcfce7; }
+.db-export-option.excel .opt-icon svg { stroke: #16a34a; }
+.db-export-option.pdf   .opt-icon { background: #fee2e2; }
+.db-export-option.pdf   .opt-icon svg { stroke: #dc2626; }
+.db-export-divider { height: 0.5px; background: #f0f0f0; margin: 0 14px; }
 .db-last-update { font-size: 11px; color: #9ca3af; margin-left: auto; }
 
 .kpi-grid {
@@ -862,13 +891,31 @@ body {
             </svg>
             โหลดข้อมูล
           </button>
-          <button class="db-export-btn" id="dbExportBtn" onclick="dbExport()" style="display:none;">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-            Export Excel
-          </button>
+          <div class="db-export-wrap" id="dbExportWrap">
+            <button class="db-export-main" id="dbExportBtn" onclick="dbToggleExportMenu(event)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Export
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-left:2px;"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="db-export-dropdown" id="dbExportDropdown">
+              <button class="db-export-option excel" onclick="dbExport(); dbCloseExportMenu();">
+                <div class="opt-icon">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </div>
+                Export to Excel
+              </button>
+              <div class="db-export-divider"></div>
+              <button class="db-export-option pdf" onclick="dbExportPDF(); dbCloseExportMenu();">
+                <div class="opt-icon">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="9" y1="11" x2="15" y2="11"/></svg>
+                </div>
+                Export to PDF
+              </button>
+            </div>
+          </div>
           <span class="db-last-update" id="dbLastUpdate"></span>
         </div>
 
@@ -1769,7 +1816,7 @@ async function dbLoadData() {
     dbRawCases = Array.isArray(raw) ? raw : (raw.value || []);
     dbPopulateFilters(dbRawCases);
     document.getElementById('dbFilterBar').style.display  = 'flex';
-    document.getElementById('dbExportBtn').style.display  = 'flex';
+    document.getElementById('dbExportWrap').classList.add('visible');
     dbApplyFilter();
     const now = new Date();
     document.getElementById('dbLastUpdate').textContent =
@@ -1878,6 +1925,20 @@ function dbStripHtml(html) {
   return (tmp.textContent || tmp.innerText || '').trim();
 }
 
+function dbToggleExportMenu(e) {
+  e.stopPropagation();
+  const dd = document.getElementById('dbExportDropdown');
+  dd.classList.toggle('open');
+}
+function dbCloseExportMenu() {
+  const dd = document.getElementById('dbExportDropdown');
+  if (dd) dd.classList.remove('open');
+}
+document.addEventListener('click', function(e) {
+  const wrap = document.getElementById('dbExportWrap');
+  if (wrap && !wrap.contains(e.target)) dbCloseExportMenu();
+});
+
 function dbExport() {
   // ดึงข้อมูล filtered ปัจจุบัน (เหมือน dbApplyFilter)
   const cust = document.getElementById('dbFilterCustomer').value;
@@ -1932,6 +1993,178 @@ function dbExport() {
   const filename = `iCare_Cases_${suffix}.xlsx`;
 
   XLSX.writeFile(wb, filename);
+}
+
+function dbExportPDF() {
+  const cust = document.getElementById('dbFilterCustomer').value;
+  const eng  = document.getElementById('dbFilterEngineer').value;
+  let rows = dbRawCases;
+  if (cust) rows = rows.filter(c => (c.customer || 'Unknown') === cust);
+  if (eng)  rows = rows.filter(c => (c.engineer || 'Unassigned') === eng);
+  if (rows.length === 0) { alert('ไม่มีข้อมูลสำหรับ export'); return; }
+
+  const { from, to } = dbGetDateRange();
+  const fmtDate = d => d ? new Date(d).toLocaleDateString('th-TH', { day:'2-digit', month:'short', year:'numeric' }) : '-';
+  const today = new Date().toLocaleDateString('th-TH', { day:'2-digit', month:'long', year:'numeric' });
+
+  const total    = rows.length;
+  const nNew     = rows.filter(c => c.status === 'New').length;
+  const nProg    = rows.filter(c => c.status === 'In Progress').length;
+  const nDone    = rows.filter(c => c.status === 'Completed').length;
+  const nCrit    = rows.filter(c => c.severity === 'Critical').length;
+
+  const byEng  = {};
+  const byCust = {};
+  const bySev  = {};
+  rows.forEach(c => {
+    const e = c.engineer || 'Unassigned';
+    const cu = c.customer || 'Unknown';
+    const s = c.severity || 'Unknown';
+    byEng[e]  = (byEng[e]  || 0) + 1;
+    byCust[cu] = (byCust[cu] || 0) + 1;
+    bySev[s]  = (bySev[s]  || 0) + 1;
+  });
+
+  const topEng  = Object.entries(byEng).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const topCust = Object.entries(byCust).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const sevOrder = ['Critical','High','Medium','Low'];
+  const sevRows = sevOrder.filter(s => bySev[s]);
+  const maxEng  = topEng[0]?.[1]  || 1;
+  const maxCust = topCust[0]?.[1] || 1;
+  const maxSev  = Math.max(...sevRows.map(s => bySev[s]), 1);
+
+  const sevColor = { Critical:'#ef4444', High:'#f59e0b', Medium:'#3b82f6', Low:'#6b7280' };
+
+  const barRows = (entries, max, color='#f97316') => entries.map(([label, val]) => `
+    <tr>
+      <td style="font-size:9px;color:#6b7280;text-align:right;padding:2px 6px 2px 0;width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;">${label}</td>
+      <td style="padding:2px 0;">
+        <div style="background:#f3f4f6;border-radius:3px;height:10px;width:100%;overflow:hidden;">
+          <div style="background:${color};height:10px;width:${Math.round(val/max*100)}%;border-radius:3px;"></div>
+        </div>
+      </td>
+      <td style="font-size:9px;font-weight:700;color:#374151;padding:2px 0 2px 6px;width:24px;">${val}</td>
+    </tr>`).join('');
+
+  const caseRows = rows.slice(0,30).map(c => `
+    <tr style="border-bottom:0.5px solid #f0f0f0;">
+      <td style="font-size:8px;color:#6b7280;padding:4px 6px;white-space:nowrap;">${c.caseId||'-'}</td>
+      <td style="font-size:8px;color:#111827;padding:4px 6px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.caseTitle||'-'}</td>
+      <td style="font-size:8px;color:#6b7280;padding:4px 6px;white-space:nowrap;">${c.customer||'-'}</td>
+      <td style="font-size:8px;color:#6b7280;padding:4px 6px;white-space:nowrap;">${c.engineer||'-'}</td>
+      <td style="font-size:8px;padding:4px 6px;white-space:nowrap;">
+        <span style="background:${c.status==='Completed'?'#d1fae5':c.status==='In Progress'?'#fef3c7':'#e0e7ff'};color:${c.status==='Completed'?'#065f46':c.status==='In Progress'?'#92400e':'#3730a3'};padding:1px 6px;border-radius:8px;font-size:7px;font-weight:700;">${c.status||'-'}</span>
+      </td>
+      <td style="font-size:8px;padding:4px 6px;white-space:nowrap;">
+        <span style="background:${c.severity==='Critical'?'#fee2e2':c.severity==='High'?'#fff7ed':'#f3f4f6'};color:${c.severity==='Critical'?'#991b1b':c.severity==='High'?'#c2410c':'#374151'};padding:1px 6px;border-radius:8px;font-size:7px;font-weight:700;">${c.severity||'-'}</span>
+      </td>
+      <td style="font-size:8px;color:#9ca3af;padding:4px 6px;white-space:nowrap;">${fmtDate(c.receivedTime)}</td>
+    </tr>`).join('');
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>iCare Helpdesk Report</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, 'Segoe UI', Arial, sans-serif; background: #fff; color: #111827; }
+  @page { size: A4 landscape; margin: 0; }
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+  .page { width: 297mm; min-height: 210mm; padding: 0; }
+  .header { background: #1a1410; padding: 18px 24px 14px; }
+  .header-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .brand-row { display: flex; align-items: center; gap: 10px; }
+  .brand-box { width: 32px; height: 32px; background: #f97316; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: #fff; }
+  .brand-name { color: #fff; font-size: 12px; font-weight: 700; letter-spacing: 0.05em; }
+  .brand-sub { color: rgba(255,255,255,0.35); font-size: 9px; margin-top: 1px; }
+  .report-title { color: #fff; font-size: 18px; font-weight: 800; margin-top: 10px; }
+  .report-period { color: #f97316; font-size: 10px; font-weight: 600; margin-top: 4px; }
+  .meta { text-align: right; }
+  .meta-label { color: rgba(255,255,255,0.35); font-size: 8px; }
+  .meta-val { color: rgba(255,255,255,0.7); font-size: 9px; font-weight: 500; margin-top: 1px; }
+  .orange-bar { height: 3px; background: #f97316; }
+  .body { padding: 16px 24px; }
+  .kpi-row { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; margin-bottom: 14px; }
+  .kpi { background: #f9fafb; border-radius: 7px; padding: 10px 12px; border-left: 3px solid #f97316; }
+  .kpi-v { font-size: 24px; font-weight: 800; color: #1a1410; }
+  .kpi-l { font-size: 9px; color: #9ca3af; margin-top: 2px; }
+  .section-title { font-size: 9px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1.5px solid #f0f0f0; }
+  .charts-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .chart-box { }
+  .bar-table { width: 100%; border-collapse: collapse; }
+  .case-table { width: 100%; border-collapse: collapse; }
+  .case-table th { font-size: 8px; font-weight: 700; color: #fff; background: #1a1410; padding: 5px 6px; text-align: left; }
+  .footer { padding: 8px 24px; background: #f9fafb; border-top: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+  .footer-left { font-size: 8px; color: #9ca3af; }
+  .footer-right { font-size: 8px; color: #9ca3af; }
+</style>
+</head><body>
+<div class="page">
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <div class="brand-row">
+          <div class="brand-box">INF</div>
+          <div><div class="brand-name">ICARE HELPDESK</div><div class="brand-sub">Infinity Solution Service</div></div>
+        </div>
+        <div class="report-title">Helpdesk Performance Report</div>
+        <div class="report-period">ช่วงเวลา: ${from} — ${to}${cust?' · ลูกค้า: '+cust:''}${eng?' · Engineer: '+eng:''}</div>
+      </div>
+      <div class="meta">
+        <div class="meta-label">Generated</div><div class="meta-val">${today}</div>
+        <div style="margin-top:8px;"><div class="meta-label">Prepared by</div><div class="meta-val">${engineerName||'iCare User'}</div></div>
+        <div style="margin-top:8px;"><div class="meta-label">Total Cases</div><div class="meta-val" style="font-size:14px;font-weight:800;color:#f97316;">${total}</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="orange-bar"></div>
+  <div class="body">
+    <div class="kpi-row">
+      <div class="kpi"><div class="kpi-v">${total}</div><div class="kpi-l">ทั้งหมด</div></div>
+      <div class="kpi" style="border-left-color:#4b3fce;"><div class="kpi-v" style="color:#4b3fce;">${nNew}</div><div class="kpi-l">New</div></div>
+      <div class="kpi" style="border-left-color:#f59e0b;"><div class="kpi-v" style="color:#f59e0b;">${nProg}</div><div class="kpi-l">In Progress</div></div>
+      <div class="kpi" style="border-left-color:#10b981;"><div class="kpi-v" style="color:#10b981;">${nDone}</div><div class="kpi-l">Completed</div></div>
+      <div class="kpi" style="border-left-color:#ef4444;"><div class="kpi-v" style="color:#ef4444;">${nCrit}</div><div class="kpi-l">Critical</div></div>
+    </div>
+    <div class="charts-row">
+      <div class="chart-box">
+        <div class="section-title">Workload by Engineer</div>
+        <table class="bar-table">${barRows(topEng, maxEng, '#f97316')}</table>
+      </div>
+      <div class="chart-box">
+        <div class="section-title">Top Customers</div>
+        <table class="bar-table">${barRows(topCust, maxCust, '#4b3fce')}</table>
+      </div>
+      <div class="chart-box">
+        <div class="section-title">By Severity</div>
+        <table class="bar-table">${sevRows.map(s => `
+          <tr>
+            <td style="font-size:9px;color:#6b7280;text-align:right;padding:2px 6px 2px 0;width:110px;">${s}</td>
+            <td style="padding:2px 0;"><div style="background:#f3f4f6;border-radius:3px;height:10px;width:100%;overflow:hidden;"><div style="background:${sevColor[s]||'#6b7280'};height:10px;width:${Math.round(bySev[s]/maxSev*100)}%;border-radius:3px;"></div></div></td>
+            <td style="font-size:9px;font-weight:700;color:#374151;padding:2px 0 2px 6px;width:24px;">${bySev[s]}</td>
+          </tr>`).join('')}
+        </table>
+      </div>
+    </div>
+    <div class="section-title">Case List ${rows.length > 30 ? '(แสดง 30 รายการแรก จากทั้งหมด '+rows.length+')' : '('+rows.length+' รายการ)'}</div>
+    <table class="case-table">
+      <thead><tr>
+        <th>Case ID</th><th>Case Title</th><th>Customer</th><th>Engineer</th><th>Status</th><th>Severity</th><th>Received</th>
+      </tr></thead>
+      <tbody>${caseRows}</tbody>
+    </table>
+  </div>
+  <div class="footer">
+    <div class="footer-left">iCare Helpdesk · Infinity Solution Service · Confidential</div>
+    <div class="footer-right">Generated ${today}</div>
+  </div>
+</div>
+<script>window.onload = () => { window.print(); }<\/script>
+</body></html>`;
+
+  const w = window.open('', '_blank', 'width=1200,height=800');
+  w.document.write(html);
+  w.document.close();
 }
 
 function dbPopulateFilters(cases) {
