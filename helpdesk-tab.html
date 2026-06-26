@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>iCare Helpdesk</title>
 <script src="https://unpkg.com/@microsoft/teams-js@2.19.0/dist/MicrosoftTeams.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -422,6 +424,107 @@ body {
 .ac-list div:hover { background: #f0f4f8; }
 .form-divider { border: none; border-top: 1px dashed #e5e7eb; margin: 4px 0 16px; }
 
+/* ===== DASHBOARD ===== */
+.db-toolbar {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 20px; flex-wrap: wrap;
+}
+.db-date-group {
+  display: flex; align-items: center; gap: 6px;
+  background: #fff; border: 1.5px solid #e8e8ee;
+  border-radius: 8px; padding: 6px 12px;
+}
+.db-date-group label { font-size: 11px; color: #9ca3af; white-space: nowrap; }
+.db-date-group input[type="date"] {
+  border: none; background: transparent;
+  font-size: 12px; font-family: inherit;
+  color: #1a1a2e; cursor: pointer; outline: none;
+}
+.db-sep { color: #9ca3af; font-size: 12px; }
+.db-load-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: #2d2a6e; color: #fff; border: none;
+  border-radius: 8px; padding: 8px 16px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  font-family: inherit; transition: background 0.15s;
+}
+.db-load-btn:hover { background: #3d38a0; }
+.db-last-update { font-size: 11px; color: #9ca3af; margin-left: auto; }
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px; margin-bottom: 20px;
+}
+.kpi-card {
+  background: #fff; border-radius: 10px;
+  padding: 16px 16px 12px; position: relative;
+  overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+.kpi-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); transform: translateY(-2px); }
+.kpi-card::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 3px;
+  border-radius: 10px 10px 0 0;
+}
+.kpi-card.total::before    { background: linear-gradient(90deg,#4b3fce,#6c63ff); }
+.kpi-card.kpi-new::before  { background: linear-gradient(90deg,#6366f1,#818cf8); }
+.kpi-card.progress::before { background: linear-gradient(90deg,#f59e0b,#fbbf24); }
+.kpi-card.done::before     { background: linear-gradient(90deg,#10b981,#34d399); }
+.kpi-card.critical::before { background: linear-gradient(90deg,#ef4444,#f87171); }
+.kpi-label { font-size: 11px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.kpi-value { font-size: 30px; font-weight: 800; line-height: 1; margin-bottom: 4px; letter-spacing: -1px; }
+.kpi-card.total    .kpi-value { color: #4b3fce; }
+.kpi-card.kpi-new  .kpi-value { color: #6366f1; }
+.kpi-card.progress .kpi-value { color: #f59e0b; }
+.kpi-card.done     .kpi-value { color: #10b981; }
+.kpi-card.critical .kpi-value { color: #ef4444; }
+.kpi-sub { font-size: 11px; color: #9ca3af; }
+.kpi-icon { position: absolute; right: 12px; bottom: 10px; font-size: 26px; opacity: 0.1; }
+
+.db-section-head {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 14px; margin-top: 20px;
+}
+.db-section-head h2 {
+  font-size: 12px; font-weight: 700; color: #9ca3af;
+  text-transform: uppercase; letter-spacing: 0.8px; white-space: nowrap;
+}
+.db-section-head::after { content: ''; flex: 1; height: 1px; background: #e8e8ee; }
+
+.chart-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 14px; margin-bottom: 14px;
+}
+.chart-card {
+  background: #fff; border-radius: 10px;
+  padding: 18px 20px 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  transition: box-shadow 0.15s;
+}
+.chart-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.chart-header {
+  display: flex; align-items: flex-start;
+  justify-content: space-between; margin-bottom: 16px;
+}
+.chart-title { font-size: 14px; font-weight: 700; color: #1a1a2e; margin-bottom: 2px; }
+.chart-desc  { font-size: 11px; color: #9ca3af; }
+.chart-badge {
+  font-size: 11px; font-weight: 700;
+  padding: 3px 10px; border-radius: 20px;
+  background: #ede9ff; color: #4b3fce; white-space: nowrap;
+}
+.chart-wrap { position: relative; height: 260px; }
+.chart-wrap.tall { height: 320px; }
+.donut-center {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-55%);
+  text-align: center; pointer-events: none;
+}
+.donut-center-num   { font-size: 28px; font-weight: 800; color: #1a1a2e; line-height: 1; }
+.donut-center-label { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+
 /* ===== FAB ===== */
 .fab {
   position: fixed;
@@ -449,7 +552,14 @@ body {
     ICARE HELPDESK
   </div>
   <nav class="sidebar-nav">
-    <div class="nav-item active" id="navMyCases" onclick="switchView('myCases')">
+    <div class="nav-item active" id="navDashboard" onclick="switchView('dashboard')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="2" y="2" width="9" height="9" rx="1"/><rect x="13" y="2" width="9" height="9" rx="1"/>
+        <rect x="2" y="13" width="9" height="9" rx="1"/><rect x="13" y="13" width="9" height="9" rx="1"/>
+      </svg>
+      Dashboard
+    </div>
+    <div class="nav-item" id="navMyCases" onclick="switchView('myCases')">
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="3" y="3" width="18" height="18" rx="2"/>
         <line x1="8" y1="8" x2="16" y2="8"/>
@@ -511,15 +621,112 @@ body {
 
     <!-- Main Content -->
     <div id="mainContent" style="display:none;">
-      <button class="new-case-btn" onclick="openNewCase()">
+      <button class="new-case-btn" id="newCaseBtn" onclick="openNewCase()">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
         </svg>
         เปิดเคสใหม่
       </button>
 
+      <!-- Dashboard View -->
+      <div id="dashboardView">
+        <div class="db-toolbar">
+          <div class="db-date-group">
+            <label>จาก</label>
+            <input type="date" id="dbDateFrom">
+            <span class="db-sep">—</span>
+            <label>ถึง</label>
+            <input type="date" id="dbDateTo">
+          </div>
+          <button class="db-load-btn" onclick="dbLoadData()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+            </svg>
+            โหลดข้อมูล
+          </button>
+          <span class="db-last-update" id="dbLastUpdate"></span>
+        </div>
+
+        <div class="db-section-head"><h2>ภาพรวม</h2></div>
+        <div class="kpi-grid">
+          <div class="kpi-card total">
+            <div class="kpi-label">เคสทั้งหมด</div>
+            <div class="kpi-value" id="kpiTotal">—</div>
+            <div class="kpi-sub" id="kpiTotalSub">ในช่วงที่เลือก</div>
+            <div class="kpi-icon">📊</div>
+          </div>
+          <div class="kpi-card kpi-new">
+            <div class="kpi-label">รอดำเนินการ</div>
+            <div class="kpi-value" id="kpiNew">—</div>
+            <div class="kpi-sub">สถานะ New</div>
+            <div class="kpi-icon">🆕</div>
+          </div>
+          <div class="kpi-card progress">
+            <div class="kpi-label">กำลังดำเนินการ</div>
+            <div class="kpi-value" id="kpiProgress">—</div>
+            <div class="kpi-sub">In Progress</div>
+            <div class="kpi-icon">⚙️</div>
+          </div>
+          <div class="kpi-card done">
+            <div class="kpi-label">ปิดแล้ว</div>
+            <div class="kpi-value" id="kpiDone">—</div>
+            <div class="kpi-sub">Completed</div>
+            <div class="kpi-icon">✅</div>
+          </div>
+          <div class="kpi-card critical">
+            <div class="kpi-label">Critical</div>
+            <div class="kpi-value" id="kpiCritical">—</div>
+            <div class="kpi-sub">ความเร่งด่วนสูงสุด</div>
+            <div class="kpi-icon">🚨</div>
+          </div>
+        </div>
+
+        <div class="db-section-head"><h2>การกระจายเคส</h2></div>
+        <div class="chart-grid">
+          <div class="chart-card">
+            <div class="chart-header">
+              <div><div class="chart-title">สถานะเคส</div><div class="chart-desc">แบ่งตาม Status ปัจจุบัน</div></div>
+              <span class="chart-badge" id="badgeStatus">0 เคส</span>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="chartStatus"></canvas>
+              <div class="donut-center" id="donutCenter">
+                <div class="donut-center-num" id="donutNum">0</div>
+                <div class="donut-center-label">ทั้งหมด</div>
+              </div>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <div><div class="chart-title">ระดับความรุนแรง</div><div class="chart-desc">แบ่งตาม Severity</div></div>
+              <span class="chart-badge" id="badgeSev">0 เคส</span>
+            </div>
+            <div class="chart-wrap"><canvas id="chartSev"></canvas></div>
+          </div>
+        </div>
+
+        <div class="db-section-head"><h2>การวิเคราะห์เชิงลึก</h2></div>
+        <div class="chart-grid">
+          <div class="chart-card">
+            <div class="chart-header">
+              <div><div class="chart-title">เคสตาม Customer</div><div class="chart-desc">Top 10 ลูกค้าที่มีเคสสูงสุด</div></div>
+              <span class="chart-badge" id="badgeCust">—</span>
+            </div>
+            <div class="chart-wrap tall"><canvas id="chartCust"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <div><div class="chart-title">Workload ต่อ Engineer</div><div class="chart-desc">จำนวนเคสแยกตาม Status</div></div>
+              <span class="chart-badge" id="badgeEng">—</span>
+            </div>
+            <div class="chart-wrap tall"><canvas id="chartEng"></canvas></div>
+          </div>
+        </div>
+      </div>
+
       <!-- My Cases View -->
-      <div id="myCasesView">
+      <div id="myCasesView" style="display:none;">
         <div class="section-label" id="activeSectionLabel">เปิดอยู่</div>
         <div id="activeCases"></div>
         <div class="section-label" style="margin-top:22px;" id="closedSectionLabel">ปิดล่าสุด</div>
@@ -701,7 +908,7 @@ let engineerName  = '';
 let allCases      = [];
 let selectedCase  = null;
 let selectedStatus = '';
-let currentView   = 'myCases';
+let currentView   = 'dashboard';
 
 const STATUS_NEXT = {
   'New':         ['In Progress'],
@@ -739,6 +946,14 @@ function statusBadge(status) {
 }
 
 // ===== INIT =====
+function showMainContent() {
+  document.getElementById('loadingScreen').style.display = 'none';
+  document.getElementById('mainContent').style.display   = 'block';
+  switchView('dashboard');
+  dbInitDates();
+  dbLoadData();
+}
+
 async function init() {
   const isInIframe = window !== window.top;
 
@@ -750,7 +965,7 @@ async function init() {
       engineerEmail = ctx.user?.loginHint || ctx.user?.userPrincipalName || '';
       engineerName  = ctx.user?.displayName || engineerEmail.split('@')[0] || 'Engineer';
       setUserBadge(engineerName);
-      await loadMyCases();
+      showMainContent();
     } catch(e) {
       document.getElementById('loadingScreen').innerHTML =
         '<div style="color:#ef4444;font-size:14px;text-align:center;">โหลดไม่สำเร็จ กรุณารีเฟรช</div>';
@@ -761,22 +976,20 @@ async function init() {
   // Browser mode → ใช้ Microsoft implicit flow
   const claims = getTokenFromHash();
   if (claims) {
-    // กลับมาจาก Microsoft login
     engineerEmail = claims.preferred_username || claims.email || claims.upn || '';
     engineerName  = claims.name || engineerEmail.split('@')[0] || 'Engineer';
     sessionStorage.setItem('icare_claims', JSON.stringify({ email: engineerEmail, name: engineerName }));
     setUserBadge(engineerName);
-    await loadMyCases();
+    showMainContent();
     return;
   }
   const saved = sessionStorage.getItem('icare_claims');
   if (saved) {
-    // มี session อยู่แล้ว
     const u = JSON.parse(saved);
     engineerEmail = u.email;
     engineerName  = u.name;
     setUserBadge(engineerName);
-    await loadMyCases();
+    showMainContent();
     return;
   }
   // ยังไม่ได้ login → redirect
@@ -834,8 +1047,11 @@ async function confirmEngineer() {
 
 // ===== LOAD CASES =====
 async function loadMyCases() {
-  document.getElementById('loadingScreen').style.display = 'flex';
-  document.getElementById('mainContent').style.display   = 'none';
+  // แสดง loading ภายในส่วน cases แทนการซ่อน mainContent ทั้งหมด
+  const loadHtml = '<div style="text-align:center;padding:40px 0;color:#9ca3af;font-size:14px;">⏳ กำลังโหลด...</div>';
+  document.getElementById('activeCases').innerHTML    = loadHtml;
+  document.getElementById('completedCases').innerHTML = '';
+  document.getElementById('historyCases').innerHTML   = loadHtml;
   try {
     const res = await fetch(GET_MY_CASES_URL, {
       method: 'POST',
@@ -846,10 +1062,10 @@ async function loadMyCases() {
     if (!Array.isArray(allCases)) allCases = allCases.value || [];
     renderCases();
   } catch(e) {
-    alert('โหลดข้อมูลไม่สำเร็จ');
+    const errHtml = '<div style="text-align:center;padding:40px 0;color:#ef4444;font-size:14px;">โหลดข้อมูลไม่สำเร็จ</div>';
+    document.getElementById('activeCases').innerHTML  = errHtml;
+    document.getElementById('historyCases').innerHTML = errHtml;
   }
-  document.getElementById('loadingScreen').style.display = 'none';
-  document.getElementById('mainContent').style.display   = 'block';
 }
 
 // ===== RENDER =====
@@ -900,12 +1116,17 @@ function emptyState(msg) {
 // ===== VIEW SWITCH =====
 function switchView(view) {
   currentView = view;
-  document.getElementById('myCasesView').style.display = view === 'myCases' ? 'block' : 'none';
-  document.getElementById('historyView').style.display  = view === 'history'  ? 'block' : 'none';
-  document.getElementById('pageTitle').textContent =
-    view === 'myCases' ? 'เคสของฉัน' : 'ประวัติเคส';
+  document.getElementById('dashboardView').style.display = view === 'dashboard' ? 'block' : 'none';
+  document.getElementById('myCasesView').style.display   = view === 'myCases'   ? 'block' : 'none';
+  document.getElementById('historyView').style.display   = view === 'history'   ? 'block' : 'none';
+  document.getElementById('newCaseBtn').style.display    = view === 'dashboard' ? 'none'  : 'flex';
+  const titles = { dashboard: 'Dashboard', myCases: 'เคสของฉัน', history: 'ประวัติเคส' };
+  document.getElementById('pageTitle').textContent = titles[view] || '';
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  document.getElementById(view === 'myCases' ? 'navMyCases' : 'navHistory').classList.add('active');
+  const navMap = { dashboard: 'navDashboard', myCases: 'navMyCases', history: 'navHistory' };
+  if (navMap[view]) document.getElementById(navMap[view]).classList.add('active');
+  // โหลด cases เมื่อสลับมาหน้าที่ต้องใช้
+  if ((view === 'myCases' || view === 'history') && allCases.length === 0) loadMyCases();
 }
 
 function openNewCase() {
@@ -1222,6 +1443,219 @@ function ncResetAndGoHome() {
   ncSelectedSeverity = ''; ncSelectedPO = ''; ncSelectedContact = { name:'', email:'' };
   document.getElementById('ncOverlay').classList.remove('show');
   loadMyCases();
+}
+
+// ===== DASHBOARD =====
+const DB_FLOW_URL = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/fcf06042058540ebbb40ed15dd5e0ab3/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=KfmZkpuK83E3gVQvBMb2kbIE5z4kKi48lUMiS73AhTA';
+
+const DB_COLORS = {
+  status: ['#4b3fce','#f59e0b','#10b981','#ef4444','#8b5cf6'],
+  sev:    ['#ef4444','#f59e0b','#3b82f6','#6b7280'],
+  stack:  ['#4b3fce','#f59e0b','#10b981']
+};
+
+let dbCharts = {};
+
+function dbInitDates() {
+  const now = new Date();
+  const to  = now.toISOString().substring(0,10);
+  const fr  = new Date(now - 30*86400*1000).toISOString().substring(0,10);
+  document.getElementById('dbDateFrom').value = fr;
+  document.getElementById('dbDateTo').value   = to;
+}
+
+async function dbLoadData() {
+  const from = document.getElementById('dbDateFrom').value;
+  const to   = document.getElementById('dbDateTo').value;
+  const btn  = document.querySelector('.db-load-btn');
+  if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; }
+  try {
+    const res  = await fetch(DB_FLOW_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ dateFrom: from, dateTo: to })
+    });
+    const data = await res.json();
+    dbRender(data);
+    const now = new Date();
+    document.getElementById('dbLastUpdate').textContent =
+      'อัปเดต ' + now.toLocaleTimeString('th-TH', {hour:'2-digit',minute:'2-digit'});
+  } catch(e) {
+    console.error('Dashboard load error', e);
+  }
+  if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+}
+
+function dbRender(data) {
+  const cases    = Array.isArray(data) ? data : (data.value || []);
+  const total    = cases.length;
+  const byStatus = {};
+  const bySev    = {};
+  const byCust   = {};
+  const byEng    = {};
+
+  cases.forEach(c => {
+    const st  = c.status   || 'Unknown';
+    const sv  = c.severity || 'Unknown';
+    const cu  = c.customer || 'Unknown';
+    const en  = c.engineer || 'Unassigned';
+    byStatus[st] = (byStatus[st] || 0) + 1;
+    bySev[sv]    = (bySev[sv]    || 0) + 1;
+    byCust[cu]   = (byCust[cu]   || 0) + 1;
+    if (!byEng[en]) byEng[en] = { New:0, 'In Progress':0, Completed:0 };
+    byEng[en][st] = (byEng[en][st] || 0) + 1;
+  });
+
+  // KPI
+  dbAnimateNum('kpiTotal',    total);
+  dbAnimateNum('kpiNew',      byStatus['New']          || 0);
+  dbAnimateNum('kpiProgress', byStatus['In Progress']  || 0);
+  dbAnimateNum('kpiDone',     byStatus['Completed']    || 0);
+  dbAnimateNum('kpiCritical', bySev['Critical']        || 0);
+
+  // Donut — Status
+  const statusLabels = Object.keys(byStatus);
+  const statusVals   = statusLabels.map(k => byStatus[k]);
+  document.getElementById('badgeStatus').textContent = total + ' เคส';
+  document.getElementById('donutNum').textContent    = total;
+  dbBuildDonut('chartStatus', statusLabels, statusVals);
+
+  // Bar H — Severity
+  const sevOrder  = ['Critical','High','Medium','Low'];
+  const sevLabels = sevOrder.filter(s => bySev[s]);
+  const sevVals   = sevLabels.map(s => bySev[s]);
+  document.getElementById('badgeSev').textContent = total + ' เคส';
+  dbBuildBarH('chartSev', sevLabels, sevVals);
+
+  // Bar V — Top 10 Customers
+  const custSorted = Object.entries(byCust).sort((a,b) => b[1]-a[1]).slice(0,10);
+  document.getElementById('badgeCust').textContent = Object.keys(byCust).length + ' ลูกค้า';
+  dbBuildBarV('chartCust', custSorted.map(x=>x[0]), custSorted.map(x=>x[1]));
+
+  // Stacked — Engineer workload
+  const engNames  = Object.keys(byEng).sort();
+  const stNew     = engNames.map(e => byEng[e]['New']         || 0);
+  const stProg    = engNames.map(e => byEng[e]['In Progress'] || 0);
+  const stDone    = engNames.map(e => byEng[e]['Completed']   || 0);
+  document.getElementById('badgeEng').textContent = engNames.length + ' Engineer';
+  dbBuildBarStacked('chartEng', engNames, [
+    { label:'New',          data: stNew,  color: DB_COLORS.stack[0] },
+    { label:'In Progress',  data: stProg, color: DB_COLORS.stack[1] },
+    { label:'Completed',    data: stDone, color: DB_COLORS.stack[2] }
+  ]);
+}
+
+function dbDestroy(id) {
+  if (dbCharts[id]) { dbCharts[id].destroy(); delete dbCharts[id]; }
+}
+
+function dbBuildDonut(id, labels, vals) {
+  dbDestroy(id);
+  const colors = labels.map((_,i) => DB_COLORS.status[i % DB_COLORS.status.length]);
+  dbCharts[id] = new Chart(document.getElementById(id), {
+    type: 'doughnut',
+    plugins: [ChartDataLabels],
+    data: { labels, datasets: [{ data: vals, backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }] },
+    options: {
+      cutout: '65%', responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { padding: 12, font: { size: 11 }, boxWidth: 12 } },
+        datalabels: {
+          color: '#fff', font: { weight: 'bold', size: 11 },
+          formatter: (v, ctx) => {
+            const total = ctx.chart.data.datasets[0].data.reduce((a,b)=>a+b,0);
+            return total ? Math.round(v/total*100) + '%' : '';
+          }
+        }
+      }
+    }
+  });
+}
+
+function dbBuildBarH(id, labels, vals) {
+  dbDestroy(id);
+  const sevColorMap = { Critical:'#ef4444', High:'#f59e0b', Medium:'#3b82f6', Low:'#6b7280' };
+  const colors = labels.map(l => sevColorMap[l] || '#9ca3af');
+  dbCharts[id] = new Chart(document.getElementById(id), {
+    type: 'bar',
+    plugins: [ChartDataLabels],
+    data: { labels, datasets: [{ data: vals, backgroundColor: colors, borderRadius: 4, borderSkipped: false }] },
+    options: {
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        datalabels: { anchor: 'end', align: 'right', color: '#374151', font: { weight: '700', size: 12 } }
+      },
+      scales: {
+        x: { grid: { color: '#f3f4f6' }, ticks: { font: { size: 11 } } },
+        y: { grid: { display: false }, ticks: { font: { size: 12 } } }
+      }
+    }
+  });
+}
+
+function dbBuildBarV(id, labels, vals) {
+  dbDestroy(id);
+  const short = labels.map(l => l.length > 14 ? l.substring(0,12) + '…' : l);
+  dbCharts[id] = new Chart(document.getElementById(id), {
+    type: 'bar',
+    plugins: [ChartDataLabels],
+    data: { labels: short, datasets: [{ data: vals, backgroundColor: '#4b3fce', borderRadius: 4, borderSkipped: false }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        datalabels: { anchor: 'end', align: 'top', color: '#374151', font: { weight: '700', size: 11 } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 35, minRotation: 20 } },
+        y: { grid: { color: '#f3f4f6' }, ticks: { font: { size: 11 } } }
+      }
+    }
+  });
+}
+
+function dbBuildBarStacked(id, labels, datasets) {
+  dbDestroy(id);
+  const short = labels.map(l => l.length > 14 ? l.substring(0,12) + '…' : l);
+  dbCharts[id] = new Chart(document.getElementById(id), {
+    type: 'bar',
+    plugins: [ChartDataLabels],
+    data: {
+      labels: short,
+      datasets: datasets.map(d => ({
+        label: d.label, data: d.data, backgroundColor: d.color,
+        borderRadius: 2, borderSkipped: false
+      }))
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { padding: 12, font: { size: 11 }, boxWidth: 12 } },
+        datalabels: {
+          display: ctx => ctx.dataset.data[ctx.dataIndex] > 0,
+          color: '#fff', font: { weight: '700', size: 10 },
+          formatter: v => v > 0 ? v : ''
+        }
+      },
+      scales: {
+        x: { stacked: true, grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 35 } },
+        y: { stacked: true, grid: { color: '#f3f4f6' }, ticks: { font: { size: 11 } } }
+      }
+    }
+  });
+}
+
+function dbAnimateNum(id, target) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  let start = 0;
+  const step = Math.ceil(target / 20);
+  const timer = setInterval(() => {
+    start = Math.min(start + step, target);
+    el.textContent = start;
+    if (start >= target) clearInterval(timer);
+  }, 30);
 }
 
 // ===== START =====
