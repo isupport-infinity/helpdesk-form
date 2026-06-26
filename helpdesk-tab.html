@@ -569,6 +569,72 @@ body {
   display: none;
 }
 
+/* ===== MOBILE ===== */
+.mobile-topbar {
+  display: none;
+  background: #2d2a6e;
+  padding: 10px 14px;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  position: sticky; top: 0; z-index: 100;
+}
+.mobile-topbar-left { display: flex; align-items: center; gap: 9px; }
+.mobile-logo {
+  height: 30px; width: auto;
+  border-radius: 6px;
+  background: #fff;
+  object-fit: contain;
+  padding: 2px 4px;
+}
+.mobile-topbar-title { color: #fff; font-size: 13px; font-weight: 700; }
+.mobile-avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: #6c63ff; border: 2px solid rgba(255,255,255,0.3);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 10px; font-weight: 700; flex-shrink: 0;
+}
+.mobile-tabnav {
+  display: none;
+  background: #fff;
+  border-bottom: 1px solid #e8e8ee;
+  flex-shrink: 0;
+  position: sticky; top: 50px; z-index: 99;
+}
+.mobile-tab {
+  flex: 1; padding: 10px 4px;
+  text-align: center; font-size: 12px;
+  color: #9ca3af; font-weight: 600;
+  border-bottom: 2px solid transparent;
+  cursor: pointer; transition: all 0.15s;
+}
+.mobile-tab.active { color: #4b3fce; border-bottom-color: #4b3fce; }
+
+@media (max-width: 700px) {
+  body { flex-direction: column; overflow: auto; height: auto; }
+  .sidebar { display: none !important; }
+  .main { min-height: unset; overflow: visible; }
+  .topbar { display: none !important; }
+  .mobile-topbar { display: flex !important; }
+  .mobile-tabnav { display: flex !important; }
+  .page-content { padding: 12px; }
+  .new-case-btn { width: 100%; justify-content: center; margin-bottom: 14px; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .chart-grid { grid-template-columns: 1fr !important; }
+  .db-toolbar { flex-wrap: wrap; gap: 8px; }
+  .db-filter-bar { flex-wrap: wrap; }
+  .db-filter-select { min-width: 0; flex: 1; }
+  .db-export-btn { width: 100%; justify-content: center; }
+  .db-last-update { margin-left: 0; }
+  .case-card { align-items: flex-start; flex-wrap: nowrap; gap: 8px; }
+  .case-body { min-width: 0; flex: 1; }
+  .case-title { font-size: 13px; white-space: normal; word-break: break-word; }
+  .case-meta { font-size: 11px; }
+  .case-id-pill { font-size: 10px; flex-shrink: 0; }
+  .modal { border-radius: 16px 16px 0 0; max-height: 95vh; }
+  .fab { bottom: 16px; right: 16px; }
+}
+
 /* ===== FAB ===== */
 .fab {
   position: fixed;
@@ -637,6 +703,22 @@ body {
       ตั้งค่า
     </div>
   </div>
+</div>
+
+<!-- ===== MOBILE TOP BAR ===== -->
+<div class="mobile-topbar" id="mobileTopbar">
+  <div class="mobile-topbar-left">
+    <img class="mobile-logo" src="logo.png" alt="Infinity Solution Service" onerror="this.style.display='none'">
+    <span class="mobile-topbar-title">iCare Helpdesk</span>
+  </div>
+  <div class="mobile-avatar" id="mobileAvatarText">--</div>
+</div>
+
+<!-- ===== MOBILE TAB NAV ===== -->
+<div class="mobile-tabnav" id="mobileTabnav">
+  <div class="mobile-tab active" id="mTabDashboard" onclick="switchView('dashboard')">Dashboard</div>
+  <div class="mobile-tab" id="mTabMyCases" onclick="switchView('myCases')">เคสของฉัน</div>
+  <div class="mobile-tab" id="mTabHistory" onclick="switchView('history')">ประวัติ</div>
 </div>
 
 <!-- ===== MAIN ===== -->
@@ -1085,8 +1167,11 @@ function setUserBadge(name) {
   const initials = parts.length >= 2
     ? parts[0][0] + parts[parts.length-1][0]
     : name.substring(0,2);
-  document.getElementById('avatarText').textContent = initials.toUpperCase();
+  const ini = initials.toUpperCase();
+  document.getElementById('avatarText').textContent = ini;
   document.getElementById('userName').textContent = name;
+  const mobileAvatar = document.getElementById('mobileAvatarText');
+  if (mobileAvatar) mobileAvatar.textContent = ini;
 }
 
 // ===== FALLBACK: Engineer Selector =====
@@ -1209,6 +1294,10 @@ function switchView(view) {
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   const navMap = { dashboard: 'navDashboard', myCases: 'navMyCases', history: 'navHistory' };
   if (navMap[view]) document.getElementById(navMap[view]).classList.add('active');
+  // Mobile tab nav
+  document.querySelectorAll('.mobile-tab').forEach(el => el.classList.remove('active'));
+  const mTabMap = { dashboard: 'mTabDashboard', myCases: 'mTabMyCases', history: 'mTabHistory' };
+  if (mTabMap[view]) document.getElementById(mTabMap[view]).classList.add('active');
   // โหลด cases เมื่อสลับมาหน้าที่ต้องใช้
   if ((view === 'myCases' || view === 'history') && allCases.length === 0) loadMyCases();
 }
