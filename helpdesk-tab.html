@@ -526,92 +526,6 @@ body {
         <div id="completedCases"></div>
       </div>
 
-      <!-- New Case View -->
-      <div id="newCaseView" style="display:none;">
-        <!-- Form -->
-        <div id="ncFormBody">
-          <!-- Customer -->
-          <div class="form-field">
-            <label class="form-label">🏢 ชื่อลูกค้า / บริษัท</label>
-            <div class="ac-wrap">
-              <input type="text" class="form-input" id="ncCustomerInput" placeholder="พิมพ์ชื่อลูกค้า..." autocomplete="off"/>
-              <div class="ac-list" id="ncAcList"></div>
-              <input type="hidden" id="ncCustomerValue"/>
-            </div>
-          </div>
-          <!-- PO -->
-          <div class="form-field">
-            <label class="form-label">📄 PO Number</label>
-            <select class="form-select" id="ncPoSelect" onchange="ncOnPOChange()" disabled>
-              <option value="">-- เลือกลูกค้าก่อน --</option>
-            </select>
-          </div>
-          <!-- Contact -->
-          <div class="form-field">
-            <label class="form-label">👥 ผู้แจ้ง (Sender)</label>
-            <select class="form-select" id="ncContactSelect" onchange="ncOnContactChange()" disabled>
-              <option value="">-- เลือกลูกค้าก่อน --</option>
-            </select>
-          </div>
-          <hr class="form-divider"/>
-          <!-- Product -->
-          <div class="form-field">
-            <label class="form-label">📦 Product</label>
-            <select class="form-select" id="ncProductSelect">
-              <option value="">-- เลือก Product --</option>
-            </select>
-          </div>
-          <!-- Quick Templates -->
-          <div class="form-field">
-            <label class="form-label">⚡ Quick Templates</label>
-            <div class="tpl-chips">
-              <span class="tpl-chip" onclick="ncSetTemplate('Product Status Down')">Product Status Down</span>
-              <span class="tpl-chip" onclick="ncSetTemplate('Cannot Backup Data as usual')">Cannot Backup Data</span>
-              <span class="tpl-chip" onclick="ncSetTemplate('User Password Expired')">Password Expired</span>
-              <span class="tpl-chip" onclick="ncSetTemplate('Certificate has expired')">Certificate Expired</span>
-            </div>
-          </div>
-          <!-- Case Title -->
-          <div class="form-field">
-            <label class="form-label">📋 หัวข้อปัญหา</label>
-            <div class="form-row">
-              <input type="text" class="form-input" id="ncCaseTitle" placeholder="สรุปปัญหาสั้นๆ..."/>
-              <button class="mic-btn" id="ncMicBtn" onclick="ncToggleSpeech('title')" title="พิมพ์ด้วยเสียง">🎤</button>
-            </div>
-          </div>
-          <!-- Case Detail -->
-          <div class="form-field">
-            <label class="form-label">📝 รายละเอียดเพิ่มเติม</label>
-            <div class="form-row">
-              <textarea class="form-textarea" id="ncCaseDetail" placeholder="รายละเอียดเพิ่มเติม..." style="flex:1;"></textarea>
-              <button class="mic-btn" id="ncMicBtnDetail" onclick="ncToggleSpeech('detail')" title="พิมพ์ด้วยเสียง">🎤</button>
-            </div>
-          </div>
-          <!-- Severity -->
-          <div class="form-field">
-            <label class="form-label">🔥 Severity</label>
-            <div class="sev-group">
-              <button class="sev-btn" data-val="Low" onclick="ncSetSeverity('Low')">🟢 Low</button>
-              <button class="sev-btn" data-val="Medium" onclick="ncSetSeverity('Medium')">🟡 Medium</button>
-              <button class="sev-btn" data-val="High" onclick="ncSetSeverity('High')">🟠 High</button>
-              <button class="sev-btn" data-val="Critical" onclick="ncSetSeverity('Critical')">🔴 Critical</button>
-            </div>
-          </div>
-          <button class="submit-btn" id="ncSubmitBtn" onclick="ncSubmitCase()">🎫 บันทึกเคส</button>
-        </div>
-        <!-- Success Screen -->
-        <div class="nc-success" id="ncSuccess">
-          <div class="nc-success-icon">✅</div>
-          <h2 style="font-size:20px;font-weight:700;color:#1a1a2e;margin-bottom:8px;">เปิดเคสสำเร็จ!</h2>
-          <div class="nc-caseid-box">
-            <div class="lbl">Case ID</div>
-            <div class="val" id="ncResultCaseId">—</div>
-          </div>
-          <div style="font-size:13px;color:#6b7280;line-height:1.6;" id="ncResultDetail"></div>
-          <button class="submit-btn" style="margin-top:24px;" onclick="ncResetAndGoHome()">กลับหน้าหลัก</button>
-        </div>
-      </div>
-
       <!-- History View -->
       <div id="historyView" style="display:none;">
         <div class="section-label" id="historySectionLabel">ประวัติเคสทั้งหมด</div>
@@ -623,6 +537,84 @@ body {
 
 <!-- FAB -->
 <button class="fab" onclick="openNewCase()" title="เปิดเคสใหม่">＋</button>
+
+<!-- New Case Modal -->
+<div class="overlay" id="ncOverlay" onclick="closeNewCase(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div style="font-size:17px;font-weight:700;margin-bottom:18px;">🎫 เปิดเคสใหม่</div>
+
+    <!-- Form -->
+    <div id="ncFormBody">
+      <div class="form-field">
+        <div class="modal-label">🏢 ลูกค้า</div>
+        <div class="ac-wrap">
+          <input type="text" class="modal-note" style="min-height:unset;margin-bottom:0;" id="ncCustomerInput" placeholder="พิมพ์ชื่อลูกค้า..." autocomplete="off"/>
+          <div class="ac-list" id="ncAcList"></div>
+          <input type="hidden" id="ncCustomerValue"/>
+        </div>
+      </div>
+      <div class="form-field">
+        <div class="modal-label">📄 PO Number</div>
+        <select class="modal-note" style="min-height:unset;margin-bottom:0;" id="ncPoSelect" onchange="ncOnPOChange()" disabled>
+          <option value="">-- เลือกลูกค้าก่อน --</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <div class="modal-label">👥 ผู้แจ้ง</div>
+        <select class="modal-note" style="min-height:unset;margin-bottom:0;" id="ncContactSelect" onchange="ncOnContactChange()" disabled>
+          <option value="">-- เลือกลูกค้าก่อน --</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <div class="modal-label">📦 Product</div>
+        <select class="modal-note" style="min-height:unset;margin-bottom:0;" id="ncProductSelect">
+          <option value="">-- เลือก Product --</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <div class="modal-label">⚡ Quick Templates</div>
+        <div class="tpl-chips" style="margin-top:6px;">
+          <span class="tpl-chip" onclick="ncSetTemplate('Product Status Down')">Product Status Down</span>
+          <span class="tpl-chip" onclick="ncSetTemplate('Cannot Backup Data as usual')">Cannot Backup Data</span>
+          <span class="tpl-chip" onclick="ncSetTemplate('User Password Expired')">Password Expired</span>
+          <span class="tpl-chip" onclick="ncSetTemplate('Certificate has expired')">Certificate Expired</span>
+        </div>
+      </div>
+      <div class="form-field">
+        <div class="modal-label">📋 หัวข้อปัญหา</div>
+        <input type="text" class="modal-note" style="min-height:unset;margin-bottom:0;" id="ncCaseTitle" placeholder="สรุปปัญหาสั้นๆ..."/>
+      </div>
+      <div class="form-field">
+        <div class="modal-label">📝 รายละเอียดเพิ่มเติม</div>
+        <textarea class="modal-note" id="ncCaseDetail" placeholder="รายละเอียด..."></textarea>
+      </div>
+      <div class="form-field">
+        <div class="modal-label">🔥 Severity</div>
+        <div class="sev-group" style="margin-top:6px;">
+          <button class="sev-btn" data-val="Low" onclick="ncSetSeverity('Low')">🟢 Low</button>
+          <button class="sev-btn" data-val="Medium" onclick="ncSetSeverity('Medium')">🟡 Medium</button>
+          <button class="sev-btn" data-val="High" onclick="ncSetSeverity('High')">🟠 High</button>
+          <button class="sev-btn" data-val="Critical" onclick="ncSetSeverity('Critical')">🔴 Critical</button>
+        </div>
+      </div>
+      <button class="update-btn" id="ncSubmitBtn" onclick="ncSubmitCase()">🎫 บันทึกเคส</button>
+      <span class="cancel-link" onclick="closeNewCase()">ยกเลิก</span>
+    </div>
+
+    <!-- Success -->
+    <div class="nc-success" id="ncSuccess">
+      <div class="nc-success-icon">✅</div>
+      <h2 style="font-size:20px;font-weight:700;color:#1a1a2e;margin-bottom:8px;">เปิดเคสสำเร็จ!</h2>
+      <div class="nc-caseid-box">
+        <div class="lbl">Case ID</div>
+        <div class="val" id="ncResultCaseId">—</div>
+      </div>
+      <div style="font-size:13px;color:#6b7280;line-height:1.6;margin-bottom:16px;" id="ncResultDetail"></div>
+      <button class="update-btn" onclick="ncResetAndGoHome()">ปิด</button>
+    </div>
+  </div>
+</div>
 
 <!-- Modal -->
 <div class="overlay" id="overlay" onclick="closeModal(event)">
@@ -898,19 +890,23 @@ function emptyState(msg) {
 // ===== VIEW SWITCH =====
 function switchView(view) {
   currentView = view;
-  document.getElementById('myCasesView').style.display  = view === 'myCases'  ? 'block' : 'none';
-  document.getElementById('newCaseView').style.display  = view === 'newCase'  ? 'block' : 'none';
+  document.getElementById('myCasesView').style.display = view === 'myCases' ? 'block' : 'none';
   document.getElementById('historyView').style.display  = view === 'history'  ? 'block' : 'none';
-  const titles = { myCases: 'เคสของฉัน', newCase: 'เปิดเคสใหม่', history: 'ประวัติเคส' };
-  document.getElementById('pageTitle').textContent = titles[view] || '';
+  document.getElementById('pageTitle').textContent =
+    view === 'myCases' ? 'เคสของฉัน' : 'ประวัติเคส';
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  const navMap = { myCases: 'navMyCases', newCase: 'navNewCase', history: 'navHistory' };
-  if (navMap[view]) document.getElementById(navMap[view]).classList.add('active');
+  document.getElementById(view === 'myCases' ? 'navMyCases' : 'navHistory').classList.add('active');
 }
 
 function openNewCase() {
-  switchView('newCase');
+  document.getElementById('ncOverlay').classList.add('show');
   if (!ncDataLoaded) ncLoadInitialData();
+}
+
+function closeNewCase(e) {
+  if (!e || e.target === document.getElementById('ncOverlay')) {
+    document.getElementById('ncOverlay').classList.remove('show');
+  }
 }
 
 // ===== MODAL =====
@@ -1190,7 +1186,7 @@ function ncResetAndGoHome() {
   document.getElementById('ncSuccess').style.display = 'none';
   document.getElementById('ncFormBody').style.display = 'block';
   ncSelectedSeverity = ''; ncSelectedPO = ''; ncSelectedContact = { name:'', email:'' };
-  switchView('myCases');
+  document.getElementById('ncOverlay').classList.remove('show');
   loadMyCases();
 }
 
