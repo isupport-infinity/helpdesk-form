@@ -1864,16 +1864,28 @@ async function updateStatus() {
 // ===== FORMAT UPDATE LOG =====
 function formatUpdateLog(raw) {
   if (!raw) return '';
-  // แปลง <br> เป็น newline ก่อน แล้วค่อย strip tags อื่น
   let text = raw
+    // ตัด <style>...</style> และ <head>...</head> ออกทั้งก้อน
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<head[\s\S]*?<\/head>/gi, '')
+    // แปลง <br> / </p> / </div> เป็น newline
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<\/p>/gi, '\n')
     .replace(/<\/div>/gi, '\n')
+    .replace(/<\/tr>/gi, '\n')
+    // strip HTML tags ที่เหลือ
     .replace(/<[^>]+>/g, '')
+    // decode HTML entities
     .replace(/&nbsp;/g, ' ')
+    .replace(/&#160;/g, ' ')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
-    .replace(/&amp;/g, '&');
+    .replace(/&amp;/g, '&')
+    .replace(/&#58;/g, ':')
+    .replace(/&#[0-9]+;/g, ' ')
+    // ล้าง whitespace เกิน
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n{3,}/g, '\n\n');
   // แยก entry ด้วย ---
   const entries = text.split(/\n?---+\n?/)
     .map(e => e.trim())
