@@ -1974,14 +1974,20 @@ async function ncLoadPO(customerShortName) {
     const res = await fetch(GET_PO_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ customerShortName }) });
     const data = await res.json();
     const raw = Array.isArray(data) ? data : (data.value || []);
+    // Filter by customerShortName — poCustomer should match CompanyShortName
+    const filtered = raw.filter(p => (p.poCustomer || '').trim() === customerShortName.trim());
+    // Fallback: show all if no match (e.g. naming mismatch)
+    const source = filtered.length > 0 ? filtered : raw;
     const poMap = {};
-    raw.forEach(p => { if (!poMap[p.poNumber] || p.endDate > poMap[p.poNumber].endDate) poMap[p.poNumber] = p; });
-    const pos = Object.values(poMap).sort((a,b) => (a.poCustomer||'').localeCompare(b.poCustomer||''));
-    sel.innerHTML = '<option value="">-- เลือก PO --</option>';
+    source.forEach(p => { if (!poMap[p.poNumber] || p.endDate > poMap[p.poNumber].endDate) poMap[p.poNumber] = p; });
+    const pos = Object.values(poMap).sort((a,b) => (a.poNumber||'').localeCompare(b.poNumber||''));
+    sel.innerHTML = pos.length
+      ? '<option value="">-- เลือก PO --</option>'
+      : '<option value="">-- ไม่พบ PO ของลูกค้านี้ --</option>';
     pos.forEach(p => {
       const opt = document.createElement('option');
       opt.value = p.poNumber || '';
-      opt.textContent = `${p.poCustomer||''} - ${p.poNumber||''} - ${p.poDescription||''}`;
+      opt.textContent = `${p.poNumber||''} - ${p.poDescription||''}`;
       sel.appendChild(opt);
     });
     sel.disabled = false;
