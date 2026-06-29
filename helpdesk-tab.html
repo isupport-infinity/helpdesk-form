@@ -1181,12 +1181,9 @@ body {
         </div>
       </div>
 
-    </div>
-  </div>
-</div>
 
       <!-- Hardware & License View -->
-      <div id="hardwareView" style="display:none;">
+      <div id="hardwareView" style="display:none;padding:20px 22px;">
         <div style="background:#fff;border-radius:14px;padding:20px 22px;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
 
           <!-- Search bar -->
@@ -1198,13 +1195,13 @@ body {
                 onkeydown="if(event.key==='Enter')hwSearch()">
             </div>
             <button onclick="hwSearch()"
-              style="height:36px;padding:0 18px;background:#1a1410;color:#fff;border:none;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;white-space:nowrap;">
-              🔍 ค้นหา
+              style="height:36px;padding:0 18px;background:#f97316;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;white-space:nowrap;">
+              ค้นหา
             </button>
           </div>
 
           <!-- Summary badges -->
-          <div id="hwSummary" style="display:none;gap:10px;margin-bottom:16px;flex-wrap:wrap;display:none;">
+          <div id="hwSummary" style="display:none;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
             <div style="display:inline-flex;align-items:center;gap:6px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:5px 12px;">
               <span style="width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block;"></span>
               <span style="font-size:12px;font-weight:600;color:#15803d;" id="hwCountActive">0</span>
@@ -1250,6 +1247,10 @@ body {
 
         </div>
       </div>
+
+    </div>
+  </div>
+</div>
 
 <!-- FAB -->
 <button class="fab" onclick="openNewCase()" title="เปิดเคสใหม่">＋</button>
