@@ -1190,10 +1190,12 @@ body {
           <!-- Search bar -->
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;">
             <div style="position:relative;flex:1;min-width:180px;">
-              <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input id="hwCustomerInput" type="text" placeholder="พิมพ์ชื่อย่อลูกค้า เช่น TLT, MASCI"
+              <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);z-index:1;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input id="hwCustomerInput" type="text" placeholder="พิมพ์ชื่อลูกค้า..." autocomplete="off"
                 style="width:100%;box-sizing:border-box;height:36px;border:1px solid #e5e7eb;border-radius:8px;padding:0 12px 0 32px;font-size:13px;font-family:inherit;color:#374151;outline:none;"
-                onkeydown="if(event.key==='Enter')hwSearch()">
+                oninput="hwOnCustomerInput()" onkeydown="if(event.key==='Enter')hwSearch()">
+              <input type="hidden" id="hwCustomerValue">
+              <div id="hwAcList" class="ac-list"></div>
             </div>
             <button onclick="hwSearch()"
               style="height:36px;padding:0 18px;background:#f97316;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;white-space:nowrap;">
@@ -1653,12 +1655,41 @@ function switchView(view) {
   if (mTabMap[view]) document.getElementById(mTabMap[view]).classList.add('active');
   if ((view === 'myCases' || view === 'history') && allCases.length === 0) loadMyCases();
   if (view === 'search') { srchPopulateDropdowns(); srchRun(); setTimeout(() => document.getElementById('srchInput')?.focus(), 100); }
-  if (view === 'hardware') setTimeout(() => document.getElementById('hwCustomerInput')?.focus(), 100);
+  if (view === 'hardware') {
+    setTimeout(() => document.getElementById('hwCustomerInput')?.focus(), 100);
+    if (!ncDataLoaded) ncLoadInitialData();
+  }
 }
 
 // ===== HARDWARE & LICENSE =====
+function hwOnCustomerInput() {
+  const input = document.getElementById('hwCustomerInput');
+  const list  = document.getElementById('hwAcList');
+  document.getElementById('hwCustomerValue').value = '';
+  const q = input.value.toLowerCase().trim();
+  list.innerHTML = '';
+  if (!q) { list.style.display = 'none'; return; }
+  // โหลด customers ถ้ายังไม่มี
+  if (!ncCustomers.length) { list.style.display = 'none'; return; }
+  const matches = ncCustomers.filter(c => c.name && c.name.toLowerCase().includes(q));
+  if (!matches.length) { list.style.display = 'none'; return; }
+  matches.forEach(c => {
+    const div = document.createElement('div');
+    div.textContent = c.name;
+    div.onclick = () => {
+      input.value = c.name;
+      document.getElementById('hwCustomerValue').value = c.short || c.name;
+      list.style.display = 'none';
+      hwSearch();
+    };
+    list.appendChild(div);
+  });
+  list.style.display = 'block';
+}
+
 async function hwSearch() {
-  const customer = (document.getElementById('hwCustomerInput').value || '').trim().toUpperCase();
+  const shortVal = document.getElementById('hwCustomerValue').value.trim();
+  const customer = (shortVal || document.getElementById('hwCustomerInput').value.trim()).toUpperCase();
   const statusLabel = document.getElementById('hwStatusLabel');
   const tbody = document.getElementById('hwResults');
   const emptyEl = document.getElementById('hwEmpty');
@@ -2112,6 +2143,8 @@ async function ncLoadInitialData() {
   });
   document.addEventListener('click', e => {
     if (!e.target.closest('.ac-wrap')) list.style.display = 'none';
+    if (!e.target.closest('#hwCustomerInput') && !e.target.closest('#hwAcList'))
+      document.getElementById('hwAcList').style.display = 'none';
   });
 }
 
