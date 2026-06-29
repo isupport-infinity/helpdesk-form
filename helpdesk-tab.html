@@ -802,6 +802,17 @@ body {
       </svg>
       ค้นหาเคส
     </div>
+    <div class="nav-item" id="navHardware" onclick="switchView('hardware')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="2" y="6" width="20" height="12" rx="2"/>
+        <line x1="6" y1="10" x2="6" y2="10" stroke-linecap="round" stroke-width="2.5"/>
+        <line x1="10" y1="10" x2="10" y2="10" stroke-linecap="round" stroke-width="2.5"/>
+        <line x1="14" y1="10" x2="18" y2="10"/>
+        <line x1="14" y1="14" x2="18" y2="14"/>
+        <line x1="6" y1="14" x2="10" y2="14"/>
+      </svg>
+      Hardware & License
+    </div>
   </nav>
   <div class="sidebar-bottom">
     <div class="sidebar-avatar" id="sidebarAvatar">--</div>
@@ -833,6 +844,7 @@ body {
   <div class="mobile-tab" id="mTabMyCases" onclick="switchView('myCases')">เคสของฉัน</div>
   <div class="mobile-tab" id="mTabHistory" onclick="switchView('history')">ประวัติ</div>
   <div class="mobile-tab" id="mTabSearch" onclick="switchView('search')">ค้นหา</div>
+  <div class="mobile-tab" id="mTabHardware" onclick="switchView('hardware')">HW/Lic</div>
 </div>
 
 <!-- ===== MAIN ===== -->
@@ -1172,6 +1184,72 @@ body {
     </div>
   </div>
 </div>
+
+      <!-- Hardware & License View -->
+      <div id="hardwareView" style="display:none;">
+        <div style="background:#fff;border-radius:14px;padding:20px 22px;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
+
+          <!-- Search bar -->
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;">
+            <div style="position:relative;flex:1;min-width:180px;">
+              <svg style="position:absolute;left:10px;top:50%;transform:translateY(-50%);" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input id="hwCustomerInput" type="text" placeholder="พิมพ์ชื่อย่อลูกค้า เช่น TLT, MASCI"
+                style="width:100%;box-sizing:border-box;height:36px;border:1px solid #e5e7eb;border-radius:8px;padding:0 12px 0 32px;font-size:13px;font-family:inherit;color:#374151;outline:none;"
+                onkeydown="if(event.key==='Enter')hwSearch()">
+            </div>
+            <button onclick="hwSearch()"
+              style="height:36px;padding:0 18px;background:#1a1410;color:#fff;border:none;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;white-space:nowrap;">
+              🔍 ค้นหา
+            </button>
+          </div>
+
+          <!-- Summary badges -->
+          <div id="hwSummary" style="display:none;gap:10px;margin-bottom:16px;flex-wrap:wrap;display:none;">
+            <div style="display:inline-flex;align-items:center;gap:6px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:5px 12px;">
+              <span style="width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block;"></span>
+              <span style="font-size:12px;font-weight:600;color:#15803d;" id="hwCountActive">0</span>
+              <span style="font-size:12px;color:#166534;">Active</span>
+            </div>
+            <div style="display:inline-flex;align-items:center;gap:6px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:5px 12px;">
+              <span style="width:8px;height:8px;border-radius:50%;background:#f97316;display:inline-block;"></span>
+              <span style="font-size:12px;font-weight:600;color:#c2410c;" id="hwCountSoon">0</span>
+              <span style="font-size:12px;color:#9a3412;">Expiring ≤90 วัน</span>
+            </div>
+            <div style="display:inline-flex;align-items:center;gap:6px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:5px 12px;">
+              <span style="width:8px;height:8px;border-radius:50%;background:#ef4444;display:inline-block;"></span>
+              <span style="font-size:12px;font-weight:600;color:#b91c1c;" id="hwCountExpired">0</span>
+              <span style="font-size:12px;color:#991b1b;">Expired</span>
+            </div>
+          </div>
+
+          <!-- Status label -->
+          <div id="hwStatusLabel" style="font-size:12px;color:#6b7280;margin-bottom:10px;"></div>
+
+          <!-- Table -->
+          <div style="border:0.5px solid #e5e7eb;border-radius:10px;overflow:hidden;overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;min-width:640px;">
+              <thead>
+                <tr style="background:#1a1410;">
+                  <th style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);padding:9px 12px;text-align:left;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;">Product</th>
+                  <th style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);padding:9px 12px;text-align:left;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;">Vendor</th>
+                  <th style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);padding:9px 12px;text-align:left;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;">Category</th>
+                  <th style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);padding:9px 12px;text-align:left;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;">MA Start</th>
+                  <th style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);padding:9px 12px;text-align:left;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;">MA End</th>
+                  <th style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);padding:9px 12px;text-align:left;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;">Status</th>
+                </tr>
+              </thead>
+              <tbody id="hwResults"></tbody>
+            </table>
+            <div id="hwEmpty" style="display:none;text-align:center;padding:40px 0;color:#9ca3af;font-size:13px;">
+              ไม่พบข้อมูล Hardware & License
+            </div>
+            <div id="hwInitial" style="text-align:center;padding:40px 0;color:#9ca3af;font-size:13px;">
+              🔍 พิมพ์ชื่อย่อลูกค้าแล้วกด ค้นหา
+            </div>
+          </div>
+
+        </div>
+      </div>
 
 <!-- FAB -->
 <button class="fab" onclick="openNewCase()" title="เปิดเคสใหม่">＋</button>
@@ -1551,32 +1629,131 @@ function emptyState(msg) {
 // ===== VIEW SWITCH =====
 function switchView(view) {
   currentView = view;
-  document.getElementById('dashboardView').style.display = view === 'dashboard' ? 'block' : 'none';
-  document.getElementById('myCasesView').style.display   = view === 'myCases'   ? 'block' : 'none';
-  document.getElementById('historyView').style.display   = view === 'history'   ? 'block' : 'none';
-  document.getElementById('searchView').style.display    = view === 'search'    ? 'block' : 'none';
-  document.getElementById('newCaseBtn').style.display    = (view === 'dashboard' || view === 'search') ? 'none' : 'flex';
-  const titles = { dashboard: 'Dashboard', myCases: 'เคสของฉัน', history: 'ประวัติเคส', search: 'ค้นหาเคส' };
+  document.getElementById('dashboardView').style.display  = view === 'dashboard' ? 'block' : 'none';
+  document.getElementById('myCasesView').style.display    = view === 'myCases'   ? 'block' : 'none';
+  document.getElementById('historyView').style.display    = view === 'history'   ? 'block' : 'none';
+  document.getElementById('searchView').style.display     = view === 'search'    ? 'block' : 'none';
+  document.getElementById('hardwareView').style.display   = view === 'hardware'  ? 'block' : 'none';
+  document.getElementById('newCaseBtn').style.display     = (view === 'dashboard' || view === 'search' || view === 'hardware') ? 'none' : 'flex';
+  const titles = { dashboard: 'Dashboard', myCases: 'เคสของฉัน', history: 'ประวัติเคส', search: 'ค้นหาเคส', hardware: 'Hardware & License' };
   document.getElementById('pageTitle').textContent = titles[view] || '';
   const icons = {
     dashboard: '<rect x="2" y="2" width="9" height="9" rx="1"/><rect x="13" y="2" width="9" height="9" rx="1"/><rect x="2" y="13" width="9" height="9" rx="1"/><rect x="13" y="13" width="9" height="9" rx="1"/>',
     myCases:   '<rect x="3" y="3" width="18" height="18" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="13" y2="16"/>',
     history:   '<circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/>',
-    search:    '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>'
+    search:    '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+    hardware:  '<rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6" y1="10" x2="6" y2="10" stroke-linecap="round" stroke-width="2.5"/><line x1="10" y1="10" x2="10" y2="10" stroke-linecap="round" stroke-width="2.5"/><line x1="14" y1="10" x2="18" y2="10"/><line x1="14" y1="14" x2="18" y2="14"/><line x1="6" y1="14" x2="10" y2="14"/>'
   };
   const iconEl = document.getElementById('topbarIcon');
   if (iconEl && icons[view]) iconEl.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.5">${icons[view]}</svg>`;
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  const navMap = { dashboard: 'navDashboard', myCases: 'navMyCases', history: 'navHistory', search: 'navSearch' };
+  const navMap = { dashboard: 'navDashboard', myCases: 'navMyCases', history: 'navHistory', search: 'navSearch', hardware: 'navHardware' };
   if (navMap[view]) document.getElementById(navMap[view]).classList.add('active');
-  // Mobile tab nav
   document.querySelectorAll('.mobile-tab').forEach(el => el.classList.remove('active'));
-  const mTabMap = { dashboard: 'mTabDashboard', myCases: 'mTabMyCases', history: 'mTabHistory', search: 'mTabSearch' };
+  const mTabMap = { dashboard: 'mTabDashboard', myCases: 'mTabMyCases', history: 'mTabHistory', search: 'mTabSearch', hardware: 'mTabHardware' };
   if (mTabMap[view]) document.getElementById(mTabMap[view]).classList.add('active');
-  // โหลด cases เมื่อสลับมาหน้าที่ต้องใช้
   if ((view === 'myCases' || view === 'history') && allCases.length === 0) loadMyCases();
-  // เมื่อเข้า search view ให้ populate dropdowns แล้ว focus input
   if (view === 'search') { srchPopulateDropdowns(); srchRun(); setTimeout(() => document.getElementById('srchInput')?.focus(), 100); }
+  if (view === 'hardware') setTimeout(() => document.getElementById('hwCustomerInput')?.focus(), 100);
+}
+
+// ===== HARDWARE & LICENSE =====
+async function hwSearch() {
+  const customer = (document.getElementById('hwCustomerInput').value || '').trim().toUpperCase();
+  const statusLabel = document.getElementById('hwStatusLabel');
+  const tbody = document.getElementById('hwResults');
+  const emptyEl = document.getElementById('hwEmpty');
+  const initialEl = document.getElementById('hwInitial');
+  const summaryEl = document.getElementById('hwSummary');
+
+  if (!customer) { statusLabel.textContent = 'กรุณาพิมพ์ชื่อย่อลูกค้าก่อน'; return; }
+
+  statusLabel.innerHTML = '<span style="color:#9ca3af;">⏳ กำลังโหลด...</span>';
+  tbody.innerHTML = '';
+  emptyEl.style.display = 'none';
+  initialEl.style.display = 'none';
+  summaryEl.style.display = 'none';
+
+  try {
+    const res = await fetch(GET_HARDWARE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ customerShortName: customer })
+    });
+    const data = await res.json();
+    const items = Array.isArray(data) ? data : (data.value || []);
+
+    if (items.length === 0) {
+      statusLabel.textContent = '';
+      emptyEl.style.display = 'block';
+      return;
+    }
+
+    // Sort by endDate ascending (soonest expiring first)
+    items.sort((a, b) => new Date(a.endDate || a.ProductEndDate || 0) - new Date(b.endDate || b.ProductEndDate || 0));
+
+    hwRender(items, customer);
+  } catch (e) {
+    statusLabel.innerHTML = '<span style="color:#ef4444;">โหลดข้อมูลไม่สำเร็จ — กรุณาตรวจสอบ Flow URL</span>';
+    console.error('hwSearch error:', e);
+  }
+}
+
+function hwRender(items, customer) {
+  const tbody = document.getElementById('hwResults');
+  const statusLabel = document.getElementById('hwStatusLabel');
+  const summaryEl = document.getElementById('hwSummary');
+  const today = new Date(); today.setHours(0,0,0,0);
+  const soon = new Date(today); soon.setDate(soon.getDate() + 90);
+
+  let cntActive = 0, cntSoon = 0, cntExpired = 0;
+
+  const rows = items.map(item => {
+    const product  = item.productDetails  || item.ProductDetails  || item.projectName  || item.ProjectName  || '—';
+    const vendor   = item.vendor          || item.Vendor          || '—';
+    const category = item.productCategory || item.ProductCategory || '—';
+    const solution = item.productSolution || item.ProductSolution || '';
+    const startRaw = item.startDate       || item.ProductStartDate|| item.productStartDate || '';
+    const endRaw   = item.endDate         || item.ProductEndDate  || item.productEndDate   || '';
+
+    const startDate = startRaw ? new Date(startRaw) : null;
+    const endDate   = endRaw   ? new Date(endRaw)   : null;
+
+    const fmtDate = d => d ? d.toLocaleDateString('th-TH', { day:'2-digit', month:'2-digit', year:'numeric' }) : '—';
+
+    let badge = '';
+    if (!endDate) {
+      badge = '<span style="font-size:11px;padding:2px 8px;border-radius:20px;background:#f3f4f6;color:#6b7280;font-weight:600;">N/A</span>';
+    } else if (endDate < today) {
+      cntExpired++;
+      badge = '<span style="font-size:11px;padding:2px 8px;border-radius:20px;background:#fef2f2;color:#b91c1c;font-weight:600;border:1px solid #fecaca;">Expired</span>';
+    } else if (endDate <= soon) {
+      cntSoon++;
+      badge = `<span style="font-size:11px;padding:2px 8px;border-radius:20px;background:#fff7ed;color:#c2410c;font-weight:600;border:1px solid #fed7aa;">Expiring Soon</span>`;
+    } else {
+      cntActive++;
+      badge = '<span style="font-size:11px;padding:2px 8px;border-radius:20px;background:#f0fdf4;color:#15803d;font-weight:600;border:1px solid #bbf7d0;">Active</span>';
+    }
+
+    const catLabel = solution ? `${category} / ${solution}` : category;
+
+    return `<tr style="border-top:1px solid #f3f4f6;transition:background 0.15s;" onmouseover="this.style.background='#fafafa'" onmouseout="this.style.background=''">
+      <td style="padding:10px 12px;font-size:12px;color:#111827;max-width:220px;">${product}</td>
+      <td style="padding:10px 12px;font-size:12px;color:#374151;white-space:nowrap;">${vendor}</td>
+      <td style="padding:10px 12px;font-size:12px;color:#6b7280;white-space:nowrap;">${catLabel}</td>
+      <td style="padding:10px 12px;font-size:12px;color:#6b7280;white-space:nowrap;">${fmtDate(startDate)}</td>
+      <td style="padding:10px 12px;font-size:12px;color:#374151;white-space:nowrap;font-weight:${endDate && endDate <= soon ? '600' : '400'};">${fmtDate(endDate)}</td>
+      <td style="padding:10px 12px;">${badge}</td>
+    </tr>`;
+  });
+
+  tbody.innerHTML = rows.join('');
+  statusLabel.textContent = `พบ ${items.length} รายการของ ${customer}`;
+
+  document.getElementById('hwCountActive').textContent  = cntActive;
+  document.getElementById('hwCountSoon').textContent    = cntSoon;
+  document.getElementById('hwCountExpired').textContent = cntExpired;
+  summaryEl.style.display = 'flex';
 }
 
 // ===== SEARCH =====
@@ -2078,7 +2255,8 @@ function ncResetAndGoHome() {
 }
 
 // ===== DASHBOARD =====
-const DB_FLOW_URL = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/fcf06042058540ebbb40ed15dd5e0ab3/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=tb05UdAglSljp2Zm58U-GrtEVHWpXm_R4LXNwhSdarI';
+const DB_FLOW_URL       = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/fcf06042058540ebbb40ed15dd5e0ab3/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=tb05UdAglSljp2Zm58U-GrtEVHWpXm_R4LXNwhSdarI';
+const GET_HARDWARE_URL  = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/8a7029db3b5c4e899557c14be6e842a0/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=He4HpTTOzyXIyB9sba4do8Zf_msm1U1mUlSZkeWG6fo'; // Flow 17: Helpdesk - Get HW&SW License
 
 const DB_COLORS = {
   status: ['#4b3fce','#f59e0b','#10b981','#ef4444','#8b5cf6'],
