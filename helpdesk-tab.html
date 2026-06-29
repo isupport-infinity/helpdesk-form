@@ -1203,6 +1203,29 @@ body {
             </button>
           </div>
 
+          <!-- Filters -->
+          <div id="hwFilters" style="display:none;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+            <select id="hwFTaskType" onchange="hwApplyFilters()" style="height:32px;border:1px solid #e5e7eb;border-radius:6px;padding:0 10px;font-size:12px;color:#374151;background:#fff;font-family:inherit;">
+              <option value="">Task Type ทั้งหมด</option>
+              <option value="Hardware License">Hardware License</option>
+              <option value="Software License">Software License</option>
+            </select>
+            <select id="hwFProject" onchange="hwApplyFilters()" style="height:32px;border:1px solid #e5e7eb;border-radius:6px;padding:0 10px;font-size:12px;color:#374151;background:#fff;font-family:inherit;max-width:220px;">
+              <option value="">Project Name ทั้งหมด</option>
+            </select>
+            <select id="hwFDistributor" onchange="hwApplyFilters()" style="height:32px;border:1px solid #e5e7eb;border-radius:6px;padding:0 10px;font-size:12px;color:#374151;background:#fff;font-family:inherit;">
+              <option value="">Distributor ทั้งหมด</option>
+            </select>
+            <select id="hwFStatus" onchange="hwApplyFilters()" style="height:32px;border:1px solid #e5e7eb;border-radius:6px;padding:0 10px;font-size:12px;color:#374151;background:#fff;font-family:inherit;">
+              <option value="">Status ทั้งหมด</option>
+              <option value="Active">Active</option>
+              <option value="Expiring Soon">Expiring Soon</option>
+              <option value="Expired">Expired</option>
+              <option value="N/A">N/A</option>
+            </select>
+            <button onclick="hwClearFilters()" style="height:32px;padding:0 12px;background:none;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#6b7280;cursor:pointer;font-family:inherit;">✕ ล้าง Filter</button>
+          </div>
+
           <!-- Summary badges -->
           <div id="hwSummary" style="display:none;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
             <div style="display:inline-flex;align-items:center;gap:6px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:5px 12px;">
@@ -1690,6 +1713,9 @@ function hwOnCustomerInput() {
   list.style.display = 'block';
 }
 
+let hwAllItems = []; // เก็บข้อมูลทั้งหมดของลูกค้าที่โหลดมา
+let hwCurrentCustomer = '';
+
 async function hwSearch() {
   const shortVal = document.getElementById('hwCustomerValue').value.trim();
   const customer = (shortVal || document.getElementById('hwCustomerInput').value.trim()).toUpperCase();
@@ -1706,6 +1732,7 @@ async function hwSearch() {
   emptyEl.style.display = 'none';
   initialEl.style.display = 'none';
   summaryEl.style.display = 'none';
+  document.getElementById('hwFilters').style.display = 'none';
 
   try {
     const res = await fetch(GET_HARDWARE_URL, {
@@ -1725,11 +1752,65 @@ async function hwSearch() {
     // Sort by endDate ascending (soonest expiring first)
     items.sort((a, b) => new Date(a.endDate || a.ProductEndDate || 0) - new Date(b.endDate || b.ProductEndDate || 0));
 
-    hwRender(items, customer);
+    hwAllItems = items;
+    hwCurrentCustomer = customer;
+    hwPopulateFilterOptions(items);
+    document.getElementById('hwFilters').style.display = 'flex';
+    hwApplyFilters();
   } catch (e) {
     statusLabel.innerHTML = '<span style="color:#ef4444;">โหลดข้อมูลไม่สำเร็จ — กรุณาตรวจสอบ Flow URL</span>';
     console.error('hwSearch error:', e);
   }
+}
+
+function hwPopulateFilterOptions(items) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const soon = new Date(today); soon.setDate(soon.getDate() + 90);
+
+  // Project Name
+  const projects = [...new Set(items.map(i => i.projectName).filter(Boolean))].sort();
+  const projSel = document.getElementById('hwFProject');
+  projSel.innerHTML = '<option value="">Project Name ทั้งหมด</option>';
+  projects.forEach(p => { const o = document.createElement('option'); o.value = p; o.textContent = p; projSel.appendChild(o); });
+
+  // Distributor
+  const distribs = [...new Set(items.map(i => i.distributor).filter(Boolean))].sort();
+  const distSel = document.getElementById('hwFDistributor');
+  distSel.innerHTML = '<option value="">Distributor ทั้งหมด</option>';
+  distribs.forEach(d => { const o = document.createElement('option'); o.value = d; o.textContent = d; distSel.appendChild(o); });
+}
+
+function hwGetStatus(endRaw) {
+  if (!endRaw) return 'N/A';
+  const today = new Date(); today.setHours(0,0,0,0);
+  const soon = new Date(today); soon.setDate(soon.getDate() + 90);
+  const endDate = new Date(endRaw);
+  if (endDate < today) return 'Expired';
+  if (endDate <= soon) return 'Expiring Soon';
+  return 'Active';
+}
+
+function hwApplyFilters() {
+  const fTask   = document.getElementById('hwFTaskType').value;
+  const fProj   = document.getElementById('hwFProject').value;
+  const fDist   = document.getElementById('hwFDistributor').value;
+  const fStatus = document.getElementById('hwFStatus').value;
+
+  let filtered = hwAllItems;
+  if (fTask)   filtered = filtered.filter(i => (i.taskType   || '') === fTask);
+  if (fProj)   filtered = filtered.filter(i => (i.projectName|| '') === fProj);
+  if (fDist)   filtered = filtered.filter(i => (i.distributor|| '') === fDist);
+  if (fStatus) filtered = filtered.filter(i => hwGetStatus(i.endDate) === fStatus);
+
+  hwRender(filtered, hwCurrentCustomer);
+}
+
+function hwClearFilters() {
+  document.getElementById('hwFTaskType').value   = '';
+  document.getElementById('hwFProject').value    = '';
+  document.getElementById('hwFDistributor').value = '';
+  document.getElementById('hwFStatus').value     = '';
+  hwApplyFilters();
 }
 
 function hwRender(items, customer) {
