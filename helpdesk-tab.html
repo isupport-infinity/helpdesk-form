@@ -1223,12 +1223,6 @@ body {
         </select>
       </div>
       <div class="form-field">
-        <div class="modal-label">📦 Product</div>
-        <select class="modal-note" style="min-height:unset;margin-bottom:0;" id="ncProductSelect">
-          <option value="">-- เลือก Product --</option>
-        </select>
-      </div>
-      <div class="form-field">
         <div class="modal-label">⚡ Quick Templates</div>
         <div class="tpl-chips" style="margin-top:6px;">
           <span class="tpl-chip" onclick="ncSetTemplate('Product Status Down')">Product Status Down</span>
@@ -1901,31 +1895,20 @@ const GET_CONTACTS_URL  = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.envi
 const CREATE_CASE_URL   = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/8afd8b0926294e34b064abb2227dbef3/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=necY1Q4WuwGeqj8hBlBS39VPsSijTo7DPlWxt6tGyaU';
 
 let ncCustomers = [], ncContacts = [], ncDataLoaded = false;
-let ncSelectedSeverity = '', ncSelectedPO = '', ncSelectedContact = { name:'', email:'' };
+let ncSelectedSeverity = '', ncSelectedPO = '', ncSelectedPODescription = '', ncSelectedContact = { name:'', email:'' };
 let ncRecognition = null, ncIsRecording = false, ncActiveField = null;
 
 async function ncLoadInitialData() {
   ncDataLoaded = true;
   try {
-    const [custRes, prodRes, engRes] = await Promise.all([
+    const [custRes, engRes] = await Promise.all([
       fetch(GET_CUSTOMERS_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' }),
-      fetch(GET_PRODUCTS_URL,  { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' }),
       fetch(GET_ENGINEERS_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' })
     ]);
     const custData = await custRes.json();
-    const prodData = await prodRes.json();
     const engData  = await engRes.json();
     ncCustomers = Array.isArray(custData) ? custData : (custData.value || []);
-    const products  = Array.isArray(prodData) ? prodData : (prodData.value || []);
     const engineers = Array.isArray(engData)  ? engData  : (engData.value  || []);
-
-    const prodSel = document.getElementById('ncProductSelect');
-    prodSel.innerHTML = '<option value="">-- เลือก Product --</option>';
-    products.forEach(p => {
-      const opt = document.createElement('option');
-      opt.value = p.product || ''; opt.textContent = p.product || '';
-      prodSel.appendChild(opt);
-    });
 
     const engSel = document.getElementById('ncEngineerSelect');
     engSel.innerHTML = '<option value="">-- เลือก Engineer --</option>';
@@ -1987,6 +1970,7 @@ async function ncLoadPO(customerShortName) {
     pos.forEach(p => {
       const opt = document.createElement('option');
       opt.value = p.poNumber || '';
+      opt.dataset.desc = p.poDescription || '';
       opt.textContent = `${p.poNumber||''} - ${p.poDescription||''}`;
       sel.appendChild(opt);
     });
@@ -2010,7 +1994,11 @@ async function ncLoadContacts(customerShortName) {
   } catch(e) { sel.innerHTML = '<option value="">-- โหลดไม่สำเร็จ --</option>'; sel.disabled = false; }
 }
 
-function ncOnPOChange() { ncSelectedPO = document.getElementById('ncPoSelect').value; }
+function ncOnPOChange() {
+  const sel = document.getElementById('ncPoSelect');
+  ncSelectedPO = sel.value;
+  ncSelectedPODescription = sel.selectedOptions[0]?.dataset.desc || '';
+}
 function ncOnContactChange() {
   const idx = parseInt(document.getElementById('ncContactSelect').value);
   ncSelectedContact = (!isNaN(idx) && ncContacts[idx])
@@ -2042,7 +2030,7 @@ async function ncSubmitCase() {
   const customer = document.getElementById('ncCustomerValue').value || document.getElementById('ncCustomerInput').value;
   const title    = document.getElementById('ncCaseTitle').value.trim();
   const detail   = document.getElementById('ncCaseDetail').value.trim();
-  const product  = document.getElementById('ncProductSelect').value;
+  const product  = ncSelectedPODescription;
   const engSel   = document.getElementById('ncEngineerSelect');
   const selEngEmail = engSel.value;
   const selEngName  = engSel.options[engSel.selectedIndex]?.dataset?.name || '';
@@ -2086,14 +2074,13 @@ function ncResetAndGoHome() {
   document.getElementById('ncPoSelect').disabled = true;
   document.getElementById('ncContactSelect').innerHTML = '<option value="">-- เลือกลูกค้าก่อน --</option>';
   document.getElementById('ncContactSelect').disabled = true;
-  document.getElementById('ncProductSelect').selectedIndex = 0;
   document.getElementById('ncEngineerSelect').value = engineerEmail;
   document.querySelectorAll('.sev-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('ncSubmitBtn').disabled = false;
   document.getElementById('ncSubmitBtn').textContent = '🎫 บันทึกเคส';
   document.getElementById('ncSuccess').style.display = 'none';
   document.getElementById('ncFormBody').style.display = 'block';
-  ncSelectedSeverity = ''; ncSelectedPO = ''; ncSelectedContact = { name:'', email:'' };
+  ncSelectedSeverity = ''; ncSelectedPO = ''; ncSelectedPODescription = ''; ncSelectedContact = { name:'', email:'' };
   document.getElementById('ncOverlay').classList.remove('show');
   loadMyCases();
 }
