@@ -1230,11 +1230,14 @@ body {
             <table style="width:100%;border-collapse:collapse;min-width:640px;">
               <thead>
                 <tr style="background:#1a1410;">
-                  <th style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);padding:9px 12px;text-align:left;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;">Product</th>
-                  <th style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);padding:9px 12px;text-align:left;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;">Vendor</th>
-                  <th style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);padding:9px 12px;text-align:left;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;">Category</th>
-                  <th style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);padding:9px 12px;text-align:left;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;">MA Start</th>
-                  <th style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);padding:9px 12px;text-align:left;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;">MA End</th>
+                  <th style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);padding:9px 12px;text-align:left;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;">PO Number</th>
+                  <th style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);padding:9px 12px;text-align:left;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;">Customer</th>
+                  <th style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);padding:9px 12px;text-align:left;letter-spacing:0.04em;text-transform:uppercase;">Project Name</th>
+                  <th style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);padding:9px 12px;text-align:left;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;">Task Type</th>
+                  <th style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);padding:9px 12px;text-align:left;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;">Distributor</th>
+                  <th style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);padding:9px 12px;text-align:left;letter-spacing:0.04em;text-transform:uppercase;">Product Details</th>
+                  <th style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);padding:9px 12px;text-align:left;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;">Start Date</th>
+                  <th style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);padding:9px 12px;text-align:left;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;">End Date</th>
                   <th style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8);padding:9px 12px;text-align:left;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;">Status</th>
                 </tr>
               </thead>
@@ -1739,12 +1742,14 @@ function hwRender(items, customer) {
   let cntActive = 0, cntSoon = 0, cntExpired = 0;
 
   const rows = items.map(item => {
-    const product  = item.productDetails  || item.ProductDetails  || item.projectName  || item.ProjectName  || '—';
-    const vendor   = item.vendor          || item.Vendor          || '—';
-    const category = item.productCategory || item.ProductCategory || '—';
-    const solution = item.productSolution || item.ProductSolution || '';
-    const startRaw = item.startDate       || item.ProductStartDate|| item.productStartDate || '';
-    const endRaw   = item.endDate         || item.ProductEndDate  || item.productEndDate   || '';
+    const poNumber   = item.poNumber      || '—';
+    const customer   = item.customer      || '—';
+    const projName   = item.projectName   || '—';
+    const taskType   = item.taskType      || '—';
+    const distrib    = item.distributor   || '—';
+    const prodDetail = item.productDetails|| '—';
+    const startRaw   = item.startDate     || '';
+    const endRaw     = item.endDate       || '';
 
     const startDate = startRaw ? new Date(startRaw) : null;
     const endDate   = endRaw   ? new Date(endRaw)   : null;
@@ -1759,18 +1764,19 @@ function hwRender(items, customer) {
       badge = '<span style="font-size:11px;padding:2px 8px;border-radius:20px;background:#fef2f2;color:#b91c1c;font-weight:600;border:1px solid #fecaca;">Expired</span>';
     } else if (endDate <= soon) {
       cntSoon++;
-      badge = `<span style="font-size:11px;padding:2px 8px;border-radius:20px;background:#fff7ed;color:#c2410c;font-weight:600;border:1px solid #fed7aa;">Expiring Soon</span>`;
+      badge = '<span style="font-size:11px;padding:2px 8px;border-radius:20px;background:#fff7ed;color:#c2410c;font-weight:600;border:1px solid #fed7aa;">Expiring Soon</span>';
     } else {
       cntActive++;
       badge = '<span style="font-size:11px;padding:2px 8px;border-radius:20px;background:#f0fdf4;color:#15803d;font-weight:600;border:1px solid #bbf7d0;">Active</span>';
     }
 
-    const catLabel = solution ? `${category} / ${solution}` : category;
-
     return `<tr style="border-top:1px solid #f3f4f6;transition:background 0.15s;" onmouseover="this.style.background='#fafafa'" onmouseout="this.style.background=''">
-      <td style="padding:10px 12px;font-size:12px;color:#111827;max-width:220px;">${product}</td>
-      <td style="padding:10px 12px;font-size:12px;color:#374151;white-space:nowrap;">${vendor}</td>
-      <td style="padding:10px 12px;font-size:12px;color:#6b7280;white-space:nowrap;">${catLabel}</td>
+      <td style="padding:10px 12px;font-size:12px;color:#374151;white-space:nowrap;">${poNumber}</td>
+      <td style="padding:10px 12px;font-size:12px;color:#374151;white-space:nowrap;">${customer}</td>
+      <td style="padding:10px 12px;font-size:12px;color:#111827;max-width:200px;">${projName}</td>
+      <td style="padding:10px 12px;font-size:12px;color:#6b7280;white-space:nowrap;">${taskType}</td>
+      <td style="padding:10px 12px;font-size:12px;color:#374151;white-space:nowrap;">${distrib}</td>
+      <td style="padding:10px 12px;font-size:12px;color:#111827;max-width:200px;">${prodDetail}</td>
       <td style="padding:10px 12px;font-size:12px;color:#6b7280;white-space:nowrap;">${fmtDate(startDate)}</td>
       <td style="padding:10px 12px;font-size:12px;color:#374151;white-space:nowrap;font-weight:${endDate && endDate <= soon ? '600' : '400'};">${fmtDate(endDate)}</td>
       <td style="padding:10px 12px;">${badge}</td>
