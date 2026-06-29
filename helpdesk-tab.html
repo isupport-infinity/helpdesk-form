@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>iCare Helpdesk</title>
+<script src="config.js"></script>
 <script src="https://unpkg.com/@microsoft/teams-js@2.19.0/dist/MicrosoftTeams.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
@@ -1401,10 +1402,7 @@ function getTokenFromHash() {
 }
 
 // ===== CONFIG =====
-const GET_ENGINEERS_URL = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/c26384e3309847528b6b9c428399f777/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=u1CdrG01HdR3M0yyiZTlHzvJgrf3hvOV85oXJNqqVRg';
-const GET_MY_CASES_URL  = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/73cf4492b201433481de7312d475969e/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=AJcqDu8G6gIMvMzxrCZQ6SSLKmaj8iM04xQYY82pBsw';
-const UPDATE_STATUS_URL = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/b9e00e1a2a864ce688cd6692ef8a4439/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=Ju1goezBvywcWSfc0nax3Y_5c7gRD_NtD4Zs6pBmGLk';
-const NEW_CASE_URL      = 'https://isupport-infinity.github.io/helpdesk-form/';
+// URLs โหลดจาก config.js (ดู <script src="config.js"> ใน <head>)
 
 // ===== STATE =====
 let engineerEmail = '';
@@ -1530,7 +1528,7 @@ async function loadEngineerSelector() {
     return;
   }
   try {
-    const res  = await fetch(GET_ENGINEERS_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' });
+    const res  = await fetch(GET_ENGINEERS_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ apiKey: API_KEY }) });
     const data = await res.json();
     const engineers = Array.isArray(data) ? data : (data.value || []);
     const sel = document.getElementById('engDropdown');
@@ -1568,7 +1566,7 @@ async function loadMyCases() {
     const res = await fetch(GET_MY_CASES_URL, {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ engineerEmail })
+      body: JSON.stringify({ apiKey: API_KEY, engineerEmail })
     });
     allCases = await res.json();
     if (!Array.isArray(allCases)) allCases = allCases.value || [];
@@ -1679,7 +1677,7 @@ async function hwSearch() {
     const res = await fetch(GET_HARDWARE_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ customerShortName: customer })
+      body: JSON.stringify({ apiKey: API_KEY, customerShortName: customer })
     });
     const data = await res.json();
     const items = Array.isArray(data) ? data : (data.value || []);
@@ -1783,7 +1781,7 @@ async function srchLoadData() {
     const res = await fetch(DB_FLOW_URL, {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ startDate: from, endDate: to })
+      body: JSON.stringify({ apiKey: API_KEY, startDate: from, endDate: to })
     });
     const raw = await res.json();
     srchOwnCases = Array.isArray(raw) ? raw : (raw.value || []);
@@ -2010,6 +2008,7 @@ async function updateStatus() {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
+        apiKey:       API_KEY,
         itemId:       selectedCase.id,
         status:       selectedStatus || selectedCase.status,
         updateNote:   document.getElementById('updateNote').value.trim(),
@@ -2058,11 +2057,7 @@ function formatUpdateLog(raw) {
 }
 
 // ===== NEW CASE FORM =====
-const GET_CUSTOMERS_URL = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/47424e018b844768a24d414d7048c9b0/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=FcrNMg3nPeMtX67OPxS2chrO9fXabbx5XfGotWFVF3s';
-const GET_PRODUCTS_URL  = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/b703a8fc164e456fa7b94adc43b90702/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=TBkId07JFhoGeYkt2vhMAf7yoT9b2kWoo5qoxBcNDlw';
-const GET_PO_URL        = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/dcebd4805f854ba0993c64f64bd4c73e/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=hI2vawIJ7N3g1tyNhbPvHaLMTGlqwqEerAZQtJBRSA4';
-const GET_CONTACTS_URL  = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/ccdec52b30a0434cb419bbbf22ab7d29/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=PtHbnOYBCXY5H9ZvB1sypv-L7bAZML6XLlpcRDpAb94';
-const CREATE_CASE_URL   = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/8afd8b0926294e34b064abb2227dbef3/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=necY1Q4WuwGeqj8hBlBS39VPsSijTo7DPlWxt6tGyaU';
+// URLs โหลดจาก config.js
 
 let ncCustomers = [], ncContacts = [], ncDataLoaded = false;
 let ncSelectedSeverity = '', ncSelectedPO = '', ncSelectedPODescription = '', ncSelectedContact = { name:'', email:'' };
@@ -2072,8 +2067,8 @@ async function ncLoadInitialData() {
   ncDataLoaded = true;
   try {
     const [custRes, engRes] = await Promise.all([
-      fetch(GET_CUSTOMERS_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' }),
-      fetch(GET_ENGINEERS_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' })
+      fetch(GET_CUSTOMERS_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ apiKey: API_KEY }) }),
+      fetch(GET_ENGINEERS_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ apiKey: API_KEY }) })
     ]);
     const custData = await custRes.json();
     const engData  = await engRes.json();
@@ -2124,7 +2119,7 @@ async function ncLoadPO(customerShortName) {
   const sel = document.getElementById('ncPoSelect');
   sel.innerHTML = '<option value="">-- กำลังโหลด... --</option>'; sel.disabled = true;
   try {
-    const res = await fetch(GET_PO_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ customerShortName }) });
+    const res = await fetch(GET_PO_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ apiKey: API_KEY, customerShortName }) });
     const data = await res.json();
     const raw = Array.isArray(data) ? data : (data.value || []);
     // Filter by customerShortName — poCustomer should match CompanyShortName
@@ -2152,7 +2147,7 @@ async function ncLoadContacts(customerShortName) {
   const sel = document.getElementById('ncContactSelect');
   sel.innerHTML = '<option value="">-- กำลังโหลด... --</option>'; sel.disabled = true;
   try {
-    const res = await fetch(GET_CONTACTS_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ customerShortName }) });
+    const res = await fetch(GET_CONTACTS_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ apiKey: API_KEY, customerShortName }) });
     const data = await res.json();
     const all = Array.isArray(data) ? data : (data.value || []);
     ncContacts = all.filter(c => (c['companyShortName'] || c['companyShortName ']).trim() === customerShortName);
@@ -2214,6 +2209,7 @@ async function ncSubmitCase() {
     const res = await fetch(CREATE_CASE_URL, {
       method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
+        apiKey: API_KEY,
         customerShortName: customer, caseTitle: title,
         severity: ncSelectedSeverity,
         engineerEmail: selEngEmail, engineerName: selEngName,
@@ -2256,8 +2252,7 @@ function ncResetAndGoHome() {
 }
 
 // ===== DASHBOARD =====
-const DB_FLOW_URL       = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/fcf06042058540ebbb40ed15dd5e0ab3/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=tb05UdAglSljp2Zm58U-GrtEVHWpXm_R4LXNwhSdarI';
-const GET_HARDWARE_URL  = 'https://default1e85b452905e4ec2805a39cf81ea8d.95.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/8a7029db3b5c4e899557c14be6e842a0/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=He4HpTTOzyXIyB9sba4do8Zf_msm1U1mUlSZkeWG6fo'; // Flow 17: Helpdesk - Get HW&SW License
+// URLs โหลดจาก config.js
 
 const DB_COLORS = {
   status: ['#4b3fce','#f59e0b','#10b981','#ef4444','#8b5cf6'],
@@ -2302,7 +2297,7 @@ async function dbLoadData() {
     const res  = await fetch(DB_FLOW_URL, {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ startDate: from, endDate: to })
+      body: JSON.stringify({ apiKey: API_KEY, startDate: from, endDate: to })
     });
     const raw = await res.json();
     dbRawCases = Array.isArray(raw) ? raw : (raw.value || []);
